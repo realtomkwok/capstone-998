@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    var htmlContent = document.documentElement.innerHTML;
+    var headContent = document.head.innerHTML; // Extract the inner HTML of the <head>
+    var bodyContent = document.body.innerHTML;
+    var filteredHTML = "<head>" + headContent + "</head><body>" + bodyContent + "</body>";
+
     console.log("123");
-    chrome.runtime.sendMessage({html: htmlContent});
+    chrome.runtime.sendMessage({html: filteredHTML});
 });
