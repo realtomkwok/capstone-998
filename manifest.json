@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Read and Send HTML",
+  "version": "1.0",
+  "permissions": ["activeTab", "storage","scripting"],
+  "background": {
+    "service_worker": "backend.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*","https://*/*/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
