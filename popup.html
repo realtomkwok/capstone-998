@@ -1,17 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Send Page HTML</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalkGuidanceGPT</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 10px; }
-        button { padding: 5px 10px; }
+        body, html {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0; /* No padding here, it's set in the container */
+            color: #333;
+        }
+
+        .container {
+            width: 280px; /* Adjust this width based on the actual popup size */
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 15px; /* Sufficient padding for content but also reduces inner width */
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin: 10px auto; /* Centers the container in the popup */
+        }
+
+        h1 {
+            font-size: 16px; /* Smaller font size to fit popup aesthetics */
+            text-align: center;
+            color: #5a5a5a;
+            margin: 8px 0; /* Less vertical space */
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            font-size: 12px; /* Reduced for compact design */
+            margin: 4px 0; /* Reduced vertical spacing */
+        }
+
+        input, select {
+            width: calc(95% - 20px); /* Subtract padding from the total width */
+            padding: 8px;
+            margin-bottom: 10px; /* Consistent, moderate spacing */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            width: 85%; /* Ensure full width alignment */
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #4CAF50;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 5px;
+            background: #ddd;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 8px;
+            margin: 0 5px;
+            border: none;
+            color: white;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        button[type="button"] {
+            background-color: #f44336;
+        }
+
+        button[type="button"]:hover {
+            background-color: #e53935;
+        }
     </style>
 </head>
 <body>
-<h1>Page HTML Sender</h1>
-<button id="sendHtml">Send HTML</button>
+<div class="container">
+    <h1>CSIT 998</h1>
+    <label for="apiKey">Token:</label>
+    <input type="text" id="apiKey" name="apiKey" value="sk*">
+    <label for="language">Language:</label>
+    <select id="language" name="language">
+        <option value="cn">Chinese</option>
+        <option value="en">English</option>
+    </select>
+    <label for="threshold">Speed:</label>
+    <input type="range" id="threshold" name="threshold" min="0" max="1" step="0.1" value="0.8">
+    <div class="buttons">
+        <button type="button" id="confirmButton">Confirm</button>
+        <button type="button" id="cancelButton">Cancel</button>
+    </div>
+</div>
 <script src="popup.js"></script>
 </body>
 </html>
+
+
+
 
 

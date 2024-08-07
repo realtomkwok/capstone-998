@@ -2,7 +2,10 @@
   "manifest_version": 3,
   "name": "Read and Send HTML",
   "version": "1.0",
-  "permissions": ["activeTab", "storage","scripting"],
+  "permissions": ["activeTab", "storage", "scripting", "tabs"],
+  "host_permissions": [
+    "*://*/*"
+  ],
   "background": {
     "service_worker": "backend.js"
   },
@@ -12,8 +15,15 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*/*","https://*/*/*"],
+      "matches": ["<all_urls>"],
       "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.js"],
+      "matches": ["<all_urls>"]
     }
   ]
 }
+

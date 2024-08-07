@@ -1,8 +1,22 @@
-document.addEventListener('DOMContentLoaded', function() {
-    var headContent = document.head.innerHTML; // Extract the inner HTML of the <head>
-    var bodyContent = document.body.innerHTML;
-    var filteredHTML = "<head>" + headContent + "</head><body>" + bodyContent + "</body>";
+console.log("Content script loaded.");
 
-    console.log("123");
-    chrome.runtime.sendMessage({html: filteredHTML});
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM fully loaded and parsed.");
+    chrome.runtime.sendMessage({ html: document.documentElement.outerHTML });
 });
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log('Content script received message:', message, 'from sender:', sender);
+    if (message.data) {
+        const website = message.data.website;
+        const summary = message.data.summary;
+        console.log(`Website: ${website}`);
+        console.log(`Summary: ${summary}`);
+        speakText(`Website: ${website}. Summary: ${summary}`);
+    }
+});
+
+function speakText(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(utterance);
+}
