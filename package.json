@@ -7,7 +7,8 @@
         "doc": "docs"
     },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "npx tsx src/llm.ts"
     },
     "repository": {
         "type": "git",
@@ -20,8 +21,11 @@
     },
     "homepage": "https://github.com/realtomkwok/capstone-998#readme",
     "dependencies": {
+        "@langchain/anthropic": "^0.2.13",
         "@langchain/community": "^0.2.25",
+        "@langchain/openai": "^0.2.6",
         "@mendable/firecrawl-js": "^0.0.13",
+        "@types/chrome": "^0.0.269",
         "dotenv": "^16.4.5",
         "html-to-text": "^9.0.5",
         "jsdom": "^24.1.1",

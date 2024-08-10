@@ -1,3 +1,5 @@
+// TODO: Add a hotkey command to trigger the extension and initial prompt
+
 document.getElementById('confirmButton').addEventListener('click', function () {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         if (tabs.length > 0 && tabs[0].url) {
