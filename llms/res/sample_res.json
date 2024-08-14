@@ -1,68 +1,26 @@
 {
     "response": {
-        "website": "You’re visiting the homepage of ABC News, a prominent news and media website.",
-        "summary": "ABC News is a well-established and comprehensive news platform that provides the latest news and headlines from Australia and around the globe. It covers a broad spectrum of topics including politics, business, entertainment, sports, science, and health. The website is designed to deliver timely, accurate, and in-depth news coverage to keep the public well-informed about current events and important issues. Whether you are looking for breaking news, detailed reports, or expert analysis, ABC News aims to be your go-to source for reliable information. The site is user-friendly and structured to help you easily navigate through various sections and find the news that matters most to you.",
-        "navigation_menu": [
-            {
-                "link_text": "Home",
-                "url": "/news",
-                "description": "You can navigate to the homepage of ABC News, where the latest headlines and top stories are featured."
-            },
-            {
-                "link_text": "Just In",
-                "url": "/news/justin",
-                "description": "Here, you can read the latest breaking news and updates as they happen."
-            },
-            {
-                "link_text": "Coronavirus",
-                "url": "/news/story-streams/coronavirus",
-                "description": "Find the most recent updates and news about the Coronavirus pandemic, including health advice and government policies."
-            },
-            {
-                "link_text": "World",
-                "url": "/news/world",
-                "description": "Stay informed about international news and global events, covering various regions and countries."
-            },
-            {
-                "link_text": "Business",
-                "url": "/news/business",
-                "description": "You can read the latest business news, financial updates, market trends, and economic analyses."
-            },
-            {
-                "link_text": "Sport",
-                "url": "/news/sport",
-                "description": "Find the latest sports news, scores, and updates from various sports leagues and events."
-            },
-            {
-                "link_text": "Politics",
-                "url": "/news/politics",
-                "description": "Stay updated on political news, including election coverage, policy changes, and political analysis."
-            },
-            {
-                "link_text": "Health",
-                "url": "/news/health",
-                "description": "You can read news and updates on health-related topics, including medical research, health policies, and wellness tips."
-            },
-            {
-                "link_text": "Science",
-                "url": "/news/science",
-                "description": "Explore the latest news in science and technology, including discoveries, innovations, and scientific research."
-            },
-            {
-                "link_text": "Fact Check",
-                "url": "/news/factcheck",
-                "description": "Verify the accuracy of news and claims with in-depth fact-checking and analysis."
-            },
-            {
-                "link_text": "Environment",
-                "url": "/news/environment",
-                "description": "Stay informed about environmental news, issues, and initiatives aimed at protecting the planet."
-            },
-            {
-                "link_text": "More",
-                "url": "#",
-                "description": "Explore more sections and topics on ABC News, including lifestyle, culture, and opinion pieces."
-            }
+        "summary": "ABC News is an Australian news website that provides up-to-date news coverage across various categories including politics, world events, business, sports, health, and entertainment. The site features a user-friendly navigation structure that allows users to access the latest news and personalized content.",
+        "keyContent": [
+            "Just In: Latest breaking news updates.",
+            "For You: Personalized news stories tailored to user interests.",
+            "Politics: Coverage of political news and events in Australia and globally.",
+            "World: International news and updates on global events.",
+            "Business: News related to the economy, markets, and business developments.",
+            "Analysis: In-depth articles and opinion pieces on current issues.",
+            "Sport: Coverage of various sports events and news."
         ]
-    }
+    },
+    "metadata": {
+        "title": "ABC News - Read the Latest News & Headlines",
+        "description": "Read the latest news headlines and in-depth analysis from an independent and trusted source. Check the latest news on business, sports, weather, and more.",
+        "ogTitle": "ABC News - Read the Latest News & Headlines",
+        "ogDescription": "Read the latest news headlines and in-depth analysis from an independent and trusted source. Check the latest news on business, sports, weather, and more.",
+        "ogUrl": "https://www.abc.net.au/news/",
+        "ogImage": "https://live-production.wcms.abc-cdn.net.au/64e3f1c052888a7fc5b2aea35aaa9a00?impolicy=wcms_crop_resize&cropH=700&cropW=700&xPos=0&yPos=0&width=862&height=862&imformat=generic",
+        "ogLocaleAlternate": [],
+        "screenshot": "https://alttmdsdujxrfnakrkyi.supabase.co/storage/v1/object/public/media/screenshot-2464261.png",
+        "pageStatusCode": 200
+    },
+    "screenshot": "https://alttmdsdujxrfnakrkyi.supabase.co/storage/v1/object/public/media/screenshot-2464261.png"
 }

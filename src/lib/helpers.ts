@@ -24,7 +24,7 @@ export async function loadUrl(url: string) {
   });
 
   return {
-    content: scrapeResponse.daa.content,
+    content: scrapeResponse.data.content,
     markdown: scrapeResponse.data.content,
     html: scrapeResponse.data.content,
     linksOnPage: scrapeResponse.data.linksOnPage,
@@ -65,9 +65,9 @@ export async function embedDocuments(
 ) {
   // TODO: Options for different LLM models
   const embedding = new OpenAIEmbeddings();
-  const ectorStore = await MemoryVectorStore.fromDocuments(chunks, embedding);
+  const VectorStore = await MemoryVectorStore.fromDocuments(chunks, embedding);
 
-  return ectorStore.asRetriever();
+  return VectorStore.asRetriever();
 }
 
 export async function createDocumentChain() {
@@ -81,7 +81,7 @@ export async function createDocumentChain() {
     keyContent: z.array(z.string()).describe("Key content of this webpage"),
   });
 
-  const parser = StrcturedOutputParser.fromZodSchema(outputSchema);
+  const parser = StructuredOutputParser.fromZodSchema(outputSchema)
 
   const chain = RunnableSequence.from([
     ChatPromptTemplate.fromMessages([
