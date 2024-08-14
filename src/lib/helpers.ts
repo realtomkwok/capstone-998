@@ -2,18 +2,16 @@ import { MarkdownTextSplitter } from "@langchain/textsplitters";
 import { Document } from "@langchain/core/documents";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
 import FirecrawlApp, { ScrapeResponse } from "@mendable/firecrawl-js";
-import { StringOutputParser } from "@langchain/core/output_parsers";
-import {
-  RunnableSequence,
-  RunnablePassthrough,
-} from "@langchain/core/runnables";
-import { VectorStoreRetriever } from "@langchain/core/vectorstores";
+import { z } from "zod";
+import { StructuredOutputParser } from "langchain/output_parsers";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import * as fs from "node:fs";
 
 export async function loadUrl(url: string) {
   const crawlLoader: FirecrawlApp = new FirecrawlApp({
-    apiKey: process.env.FIRECRAWL_API_KEY,
+    apiKey: process.env.FIRECRAWL_AP_KEY,
   });
 
   const scrapeResponse: ScrapeResponse = await crawlLoader.scrapeUrl(url, {
@@ -26,7 +24,7 @@ export async function loadUrl(url: string) {
   });
 
   return {
-    content: scrapeResponse.data.content,
+    content: scrapeResponse.daa.content,
     markdown: scrapeResponse.data.content,
     html: scrapeResponse.data.content,
     linksOnPage: scrapeResponse.data.linksOnPage,
@@ -67,55 +65,66 @@ export async function embedDocuments(
 ) {
   // TODO: Options for different LLM models
   const embedding = new OpenAIEmbeddings();
-  const vectorStore = await MemoryVectorStore.fromDocuments(chunks, embedding);
+  const ectorStore = await MemoryVectorStore.fromDocuments(chunks, embedding);
 
-  return vectorStore.asRetriever();
+  return ectorStore.asRetriever();
 }
 
-export async function createDocumentChain(
-  retriever: VectorStoreRetriever<MemoryVectorStore>,
-) {
-  //
-  // const zodSchema = z.object({
-  //         websiteName: z.string().describe("The name of the website"),
-  //         mainNavigationItems: z.array(z.string()).describe("The main navigation items of the website"),
-  //         summary: z.string().describe("The summary of the website's overall purpose and key contents under each" +
-  //             " navigation item"),
-  //         keyContents: z.array(z.string()).describe("The key contents under each navigation item"),
-  //         nextMove: z.string().describe("Suggest the next move for the user based on the provided content, ensuring the" +
-  //             " suggestion aligns with the website's main focus and the user's potential interests.")
-  //     }
-  // )
-
-  // const parser = StructuredOutputParser.fromZodSchema(zodSchema)
-
-  const parser = new StringOutputParser();
-
-  const llm = new ChatOpenAI({
-    modelName: "gpt-4o-mini",
+export async function createDocumentChain() {
+  const model = new ChatOpenAI({
+    model: "gpt-4o-mini",
     temperature: 0,
   });
 
-  const formatDocumentsAsString = (documents: Document[]) => {
-    return documents.map((document) => document.pageContent).join("\n\n");
-  };
+  const outputSchema = z.object({
+    summary: z.string().describe("Summary of this webpage"),
+    keyContent: z.array(z.string()).describe("Key content of this webpage"),
+  });
 
-  const SYSTEM_TEMPLATE: string = `You are a helpful assistant helping visually impaired user to interpret and navigate the web. You will be given context of the webpage that the user is visiting, and answer their questions to the best of your ability using only the resources provided. Be verbose, concise, friendly in your response.
-    --------------
-    {context}`;
+  const parser = StrcturedOutputParser.fromZodSchema(outputSchema);
 
-  const prompt = ChatPromptTemplate.fromMessages([
-    ["system", SYSTEM_TEMPLATE],
-    ["human", "{question"],
-  ]);
-
-  return RunnableSequence.from([
-    {
-      context: retriever.pipe(formatDocumentsAsString),
-      question: new RunnablePassthrough(),
-    },
-    prompt,
-    llm,
+  const chain = RunnableSequence.from([
+    ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        "You are a helpful assistant helping visually impaired user to interpret and navigate the web. You will be given context of the webpage that the user is visiting, and answer their questions to the best of your ability using only the resources provided. Be verbose, concise, friendly in your response.",
+      ],
+      ["assistant", "{format_instructions}"],
+      [
+        "user",
+        "Please answer the following questions according to the provided context: \\n{question} \\n{context}",
+      ],
+    ]),
+    model,
     parser,
   ]);
+
+  const formatInstructions = parser.getFormatInstructions();
+
+  return { chain, formatInstructions };
 }
+
+export async function getAnswerFromLLM(url: string) {
+  const document = await loadUrl(url);
+  const markdown = document.markdown;
+  const html = document.html;
+  const metadata = document.metadata;
+  const screenshot = metadata.screenshot;
+
+  const { chain, formatInstructions } = await createDocumentChain();
+
+  const response = await chain.invoke({
+    context: markdown,
+    question:
+      "Please analyze the provided website URL and perform the following tasks. Return the results in JSON format.\n1. Identify the website and its navigation: extract the website name, and list its main navigation items. If there are sub-menus, list them as well.\n2. Summarize the website's overall purpose and key contents under each navigation item.\n3. Suggest the next move for the user based on the provided content, ensuring the suggestion aligns with the website's main focus and the user's potential interests. This could be user's next action or question for you.",
+    format_instructions: formatInstructions,
+  });
+
+  return { response, metadata, screenshot };
+}
+
+getAnswerFromLLM("https://www.abc.net.au/news").then((response) => {
+  console.log(response);
+  // Save JSON response to a file
+  fs.writeFileSync("response.json", JSON.stringify(response, null, 2));
+});
