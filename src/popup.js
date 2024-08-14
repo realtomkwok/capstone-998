@@ -1,12 +1,13 @@
 // TODO: Add a hotkey command to trigger the extension and initial prompt
+import {getAnswerFromLLM} from "./lib/helpers";
 
-document.getElementById('confirmButton').addEventListener('click', function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+document.getElementById('confirmButton').addEventListener('click', () => {
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         if (tabs.length > 0 && tabs[0].url) {
             if (tabs[0].url.startsWith('http://') || tabs[0].url.startsWith('https://')) {
                 chrome.scripting.executeScript({
-                    target: { tabId: tabs[0].id },
-                    function: sendPageHtml
+                    target: {tabId: tabs[0].id},
+                    function: getAnswerFromLLM(tabs[0].url)
                 }, (results) => {
                     if (chrome.runtime.lastError) {
                         console.error("Error injecting script: ", chrome.runtime.lastError.message);
@@ -20,12 +21,5 @@ document.getElementById('confirmButton').addEventListener('click', function () {
         } else {
             console.error("No accessible tab or URL found.");
         }
-    });
-    console.log("Message sent.");
-});
-
-function sendPageHtml() {
-    chrome.runtime.sendMessage({ html: document.documentElement.outerHTML }, response => {
-        console.log("HTML sent to background script.");
-    });
-}
+    })
+})

@@ -1,26 +1,89 @@
 {
     "response": {
-        "summary": "ABC News is an Australian news website that provides up-to-date news coverage across various categories including politics, world events, business, sports, health, and entertainment. The site features a user-friendly navigation structure that allows users to access the latest news and personalized content.",
+        "summary": "The ABC News website provides comprehensive news coverage, including local, national, and international stories, along with various sections dedicated to politics, business, sports, science, health, entertainment, and lifestyle.",
         "keyContent": [
-            "Just In: Latest breaking news updates.",
-            "For You: Personalized news stories tailored to user interests.",
-            "Politics: Coverage of political news and events in Australia and globally.",
-            "World: International news and updates on global events.",
-            "Business: News related to the economy, markets, and business developments.",
-            "Analysis: In-depth articles and opinion pieces on current issues.",
-            "Sport: Coverage of various sports events and news."
+            {
+                "name": "Just In",
+                "url": "https://www.abc.net.au/news/justin",
+                "description": "Latest breaking news stories and updates."
+            },
+            {
+                "name": "Watch Live",
+                "url": "https://www.abc.net.au/news/newschannel",
+                "description": "Live streaming of news coverage and events."
+            },
+            {
+                "name": "Politics",
+                "url": "https://www.abc.net.au/news/politics",
+                "description": "Coverage of political news, analysis, and opinion."
+            },
+            {
+                "name": "World",
+                "url": "https://www.abc.net.au/news/world",
+                "description": "International news stories and global events."
+            },
+            {
+                "name": "Business",
+                "url": "https://www.abc.net.au/news/business",
+                "description": "News related to the economy, markets, and business developments."
+            },
+            {
+                "name": "Analysis",
+                "url": "https://www.abc.net.au/news/analysis-and-opinion",
+                "description": "In-depth analysis and opinion pieces on current issues."
+            },
+            {
+                "name": "Sport",
+                "url": "https://www.abc.net.au/news/sport",
+                "description": "Latest sports news, events, and analysis."
+            },
+            {
+                "name": "Science",
+                "url": "https://www.abc.net.au/news/science",
+                "description": "News and features on scientific discoveries and research."
+            },
+            {
+                "name": "Health",
+                "url": "https://www.abc.net.au/news/health",
+                "description": "Health-related news, research, and advice."
+            },
+            {
+                "name": "Entertainment",
+                "url": "https://www.abc.net.au/news/entertainment",
+                "description": "News on movies, music, and cultural events."
+            },
+            {
+                "name": "Lifestyle",
+                "url": "https://www.abc.net.au/news/lifestyle",
+                "description": "Features on lifestyle topics, including food, travel, and wellness."
+            },
+            {
+                "name": "Fact Check",
+                "url": "https://www.abc.net.au/news/factcheck",
+                "description": "Verification of claims and statements made in public discourse."
+            },
+            {
+                "name": "Other",
+                "url": "https://www.abc.net.au/news/more",
+                "description": "Additional news and features not categorized elsewhere."
+            }
+        ],
+        "nextActions": [
+            "Explore the latest news in the 'Just In' section for breaking updates.",
+            "Watch live news coverage to stay informed about current events.",
+            "Visit the 'Politics' section to read about the latest political developments."
         ]
     },
     "metadata": {
-        "title": "ABC News - Read the Latest News & Headlines",
+        "title": "ABC News - Read the Latest News & HeadlinesiviewListen",
         "description": "Read the latest news headlines and in-depth analysis from an independent and trusted source. Check the latest news on business, sports, weather, and more.",
         "ogTitle": "ABC News - Read the Latest News & Headlines",
         "ogDescription": "Read the latest news headlines and in-depth analysis from an independent and trusted source. Check the latest news on business, sports, weather, and more.",
         "ogUrl": "https://www.abc.net.au/news/",
         "ogImage": "https://live-production.wcms.abc-cdn.net.au/64e3f1c052888a7fc5b2aea35aaa9a00?impolicy=wcms_crop_resize&cropH=700&cropW=700&xPos=0&yPos=0&width=862&height=862&imformat=generic",
         "ogLocaleAlternate": [],
-        "screenshot": "https://alttmdsdujxrfnakrkyi.supabase.co/storage/v1/object/public/media/screenshot-2464261.png",
+        "screenshot": "https://alttmdsdujxrfnakrkyi.supabase.co/storage/v1/object/public/media/screenshot-8906941.png",
         "pageStatusCode": 200
     },
-    "screenshot": "https://alttmdsdujxrfnakrkyi.supabase.co/storage/v1/object/public/media/screenshot-2464261.png"
+    "screenshot": "https://alttmdsdujxrfnakrkyi.supabase.co/storage/v1/object/public/media/screenshot-8906941.png"
 }

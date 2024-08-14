@@ -14,7 +14,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 function processMessage(html, tabId) {
     const jsonData = JSON.stringify({ html: html });
     console.log("Sending this data to the server:", jsonData);
-    fetch('http://ec2-3-107-89-120.ap-southeast-2.compute.amazonaws.com/test', {
+    fetch('http://ec2-13-55-69-254.ap-southeast-2.compute.amazonaws.com/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: jsonData

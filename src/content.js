@@ -1,3 +1,5 @@
+import {getAnswerFromLLM} from "./lib/helpers";
+
 console.log("Content script loaded.");
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,6 +17,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         speakText(`Website: ${website}. Summary: ${summary}`);
     }
 });
+
 
 function speakText(text) {
     const utterance = new SpeechSynthesisUtterance(text);

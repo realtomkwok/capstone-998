@@ -7,7 +7,6 @@ import { z } from "zod";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import * as fs from "node:fs";
 
 export async function loadUrl(url: string) {
   const crawlLoader: FirecrawlApp = new FirecrawlApp({
@@ -19,7 +18,7 @@ export async function loadUrl(url: string) {
       includeHtml: true,
       replaceAllPathsWithAbsolutePaths: true,
       fullPageScreenshot: true,
-      waitFor: 3000,
+      waitFor: 1000,
     },
   });
 
@@ -78,10 +77,17 @@ export async function createDocumentChain() {
 
   const outputSchema = z.object({
     summary: z.string().describe("Summary of this webpage"),
-    keyContent: z.array(z.string()).describe("Key content of this webpage"),
+    keyContent: z.array(
+        z.object({
+          name: z.string().describe("Name of the item"),
+          url: z.string().describe("Url of the item"),
+          description: z.string().describe("Description of the item"),
+        }),
+    ),
+    nextActions: z.array(z.string().describe("Next actions for the user")),
   });
 
-  const parser = StructuredOutputParser.fromZodSchema(outputSchema)
+  const parser = StructuredOutputParser.fromZodSchema(outputSchema);
 
   const chain = RunnableSequence.from([
     ChatPromptTemplate.fromMessages([
@@ -124,7 +130,7 @@ export async function getAnswerFromLLM(url: string) {
 }
 
 getAnswerFromLLM("https://www.abc.net.au/news").then((response) => {
+  console.time("getAnswerFromLLM");
   console.log(response);
-  // Save JSON response to a file
-  fs.writeFileSync("response.json", JSON.stringify(response, null, 2));
+  console.timeEnd("getAnswerFromLLM");
 });
