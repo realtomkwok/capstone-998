@@ -76,6 +76,7 @@ html {
 
 .subtitle {
   font-size: 12px;
+	font-weight: bold;
   text-align: center;
 }
 
@@ -92,4 +93,10 @@ code {
   width: 50px;
   border: 0.5px dashed #000;
   opacity: 0.1;
+}
+
+.caption {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
 }

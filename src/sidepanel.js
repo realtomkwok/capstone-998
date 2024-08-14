@@ -1,74 +1,51 @@
 'use strict';
 
 import './sidepanel.css';
+import { getAnswerFromLLM } from './helper';
 
-(function () {
-  function initList(tabs) {
-    const list = document.getElementById('tabs-list');
+(function() {
+	function container() {
+		// Display the API keys for testing
+		const button = document.getElementById('btn');
+		let currentUrl
+		document.getElementById('fireCrawlApiKey').innerText = process.env.FIRECRAWL_API_KEY
+		document.getElementById('openAiApiKey').innerText = process.env.OPENAI_API_KEY
 
-    const listItem = tabs.map((tab) => {
-      return `
-      <li>
-        <div data-tab-id="${tab.id}" class="tab-container">
-          ${
-            tab.favIconUrl
-              ? `<img src="${tab.favIconUrl}" alt="" class="tab-image" />`
-              : '<span class="tab-image tab-image-placeholder">&#x2750;</span>'
-          }
-          <p class="tab-title" title="${tab.title}">${tab.title}</p>
-        </div>
-      </li>
-      `;
-    });
+		// Get the current URL
+		async function getCurrentTab() {
+			let queryOptions = { active: true, currentWindow: true }
+			let [tab] = await chrome.tabs.query(queryOptions)
+			return tab
+		}
 
-    list.innerHTML = listItem.join('\n');
+		getCurrentTab().then(tab => {
+			document.getElementById('currentUrl').innerText = tab.url
+			currentUrl = tab.url
+		})
 
-    list.addEventListener('click', (event) => {
-      if (event.target && event.target.closest('.tab-container')) {
-        const tabId = event.target
-          .closest('.tab-container')
-          .getAttribute('data-tab-id');
 
-        chrome.tabs.update(Number(tabId), {
-          active: true,
-        });
-      }
-    });
-  }
+		// Pressing the button will trigger the function
+		button.addEventListener('click', async () => {
+			const answer = await getAnswerFromLLM(await currentUrl);
+			document.getElementById("summary").innerText = answer.response.summary
+		});
+	}
 
-  function setupTabList() {
-    chrome.tabs.query(
-      {
-        currentWindow: true,
-      },
-      (tabs) => {
-        initList(tabs);
-      }
-    );
-  }
+	document.addEventListener('DOMContentLoaded', () => {
+		container();
+	});
 
-  function setupTabListeners() {
-    chrome.tabs.onCreated.addListener(setupTabList);
-    chrome.tabs.onMoved.addListener(setupTabList);
-    chrome.tabs.onRemoved.addListener(setupTabList);
-    chrome.tabs.onUpdated.addListener(setupTabList);
-  }
+	// Communicate with background file by sending a message
+	chrome.runtime.sendMessage(
+		{
+			type: 'GREETINGS',
+			payload: {
+				message: 'Hello, my name is Syd. I am from SidePanel.',
+			},
+		},
+		(response) => {
+			console.log(response.message);
+		},
+	);
 
-  document.addEventListener('DOMContentLoaded', () => {
-    setupTabList();
-    setupTabListeners();
-  });
-
-  // Communicate with background file by sending a message
-  chrome.runtime.sendMessage(
-    {
-      type: 'GREETINGS',
-      payload: {
-        message: 'Hello, my name is Syd. I am from SidePanel.',
-      },
-    },
-    (response) => {
-      console.log(response.message);
-    }
-  );
 })();

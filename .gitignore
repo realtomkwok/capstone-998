@@ -13,3 +13,6 @@ npm-debug.log*
 
 # packed files
 /release
+
+# local env files
+.env

@@ -1,29 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>My Sidepanel</title>
-    <link rel="stylesheet" href="sidepanel.css" />
-  </head>
-  <body>
-    <div class="app">
-      <p class="app-heading">Tabs</p>
+<head>
+	<meta charset="UTF-8" />
+	<title>My Sidepanel</title>
+	<link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+<div class="app">
+	<p class="app-heading">Clara</p>
 
-      <ul id="tabs-list" class="tabs-list"></ul>
+	<hr class="divider" />
 
-      <hr class="divider" />
+	<p>Current URL: <span id="currentUrl"></span></p>
+	<p>FireCrawl API Key:<span class="caption" id="fireCrawlApiKey"></span></p>
+	<p>Open AI API Key:<span class="caption" id="openAiApiKey"></span></p>
 
-      <p class="title">Chrome Extension is Ready!</p>
-      <p class="subtitle">Start by updating <code>sidepanel.html</code></p>
-    </div>
+	<hr class="divider" />
 
-    <script src="sidepanel.js"></script>
+	<p class="title">Summary</p>
+	<p id="summary"></p>
 
-    <!--
-      This HTML file opens when you click on icon from the toolbar.
+	<button id="btn" class="btn">Click me to Summarize</button>
+</div>
 
-      To begin the development, run `npm run watch`.
-      To create a production bundle, use `npm run build`.
-    -->
-  </body>
+<script src="sidepanel.js"></script>
+
+<!--
+  This HTML file opens when you click on icon from the toolbar.
+
+  To begin the development, run `npm run watch`.
+  To create a production bundle, use `npm run build`.
+-->
+</body>
 </html>
