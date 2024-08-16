@@ -117,7 +117,7 @@ export async function createDocumentChain() {
 }
 
 
-export const getAnswerFromLLM = traceable(async function(url: string) {
+export async function getAnswerFromLLM(url: string) {
 	const document = await loadUrl(url);
 	const markdown = document.markdown;
 	const html = document.html;
@@ -133,4 +133,4 @@ export const getAnswerFromLLM = traceable(async function(url: string) {
 	});
 
 	return { response, metadata, screenshot };
-})
+}
