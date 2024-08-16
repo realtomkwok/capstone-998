@@ -1,7 +1,7 @@
 'use strict';
 
 import './sidepanel.css';
-import { getAnswerFromLLM } from './helper';
+import { getAnswerFromLLM } from './lib/helper';
 
 (function() {
 	function container() {
@@ -27,8 +27,18 @@ import { getAnswerFromLLM } from './helper';
 		// Pressing the button will trigger the function
 		button.addEventListener('click', async () => {
 			const answer = await getAnswerFromLLM(await currentUrl);
-			document.getElementById("summary").innerText = answer.response.summary
+			// Read the summary
+			const summary = answer.response.summary;
+			chrome.tts.speak(summary);
+			document.getElementById('summary').innerText = summary;
+			document.getElementById('answer').innerHTML = `
+			<ul>
+</ul>
+			`;
 		});
+
+		// Stop the reading
+
 	}
 
 	document.addEventListener('DOMContentLoaded', () => {
@@ -40,7 +50,7 @@ import { getAnswerFromLLM } from './helper';
 		{
 			type: 'GREETINGS',
 			payload: {
-				message: 'Hello, my name is Syd. I am from SidePanel.',
+				message: 'Hello from the sidepanel!',
 			},
 		},
 		(response) => {

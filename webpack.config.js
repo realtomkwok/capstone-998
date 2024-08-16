@@ -1,4 +1,5 @@
 const path = require('path');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 module.exports = {
 	entry: {
@@ -12,7 +13,13 @@ module.exports = {
 	},
 	resolve: {
 		extensions: ['.ts', '.js'],
+		fallback: {
+			'node:async_hooks': require.resolve('node:async_hooks'),
+		},
 	},
+	plugins: [
+		new NodePolyfillPlugin(),
+	],
 	module: {
 		rules: [
 			{

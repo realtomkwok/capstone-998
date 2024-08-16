@@ -7,6 +7,12 @@ import { z } from 'zod';
 import { StructuredOutputParser } from 'langchain/output_parsers';
 import { RunnableSequence } from '@langchain/core/runnables';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
+import {
+	DESCRIPTION_INSTRUCTIONS,
+	SUMMARY_INSTRUCTIONS,
+	SYSTEM_MSG, USER_MSG,
+} from './prompts';
+import { traceable } from 'langsmith/traceable';
 
 export async function loadUrl(url: string) {
 	const crawlLoader: FirecrawlApp = new FirecrawlApp({
@@ -77,15 +83,14 @@ export async function createDocumentChain() {
 	});
 
 	const outputSchema = z.object({
-		summary: z.string().describe('Summary of this webpage'),
+		summary: z.string().describe(SUMMARY_INSTRUCTIONS),
 		keyContent: z.array(
 			z.object({
 				name: z.string().describe('Name of the item'),
 				url: z.string().describe('Url of the item'),
-				description: z.string().describe('Description of the item'),
+				description: z.string().describe(DESCRIPTION_INSTRUCTIONS),
 			}),
 		),
-		nextActions: z.array(z.string().describe('Next actions for the user')),
 	});
 
 	const parser = StructuredOutputParser.fromZodSchema(outputSchema);
@@ -94,7 +99,7 @@ export async function createDocumentChain() {
 		ChatPromptTemplate.fromMessages([
 			[
 				'system',
-				'You are a helpful assistant helping visually impaired user to interpret and navigate the web. You will be given context of the webpage that the user is visiting, and answer their questions to the best of your ability using only the resources provided. Be verbose, concise, friendly in your response.',
+				SYSTEM_MSG,
 			],
 			['assistant', '{format_instructions}'],
 			[
@@ -111,7 +116,8 @@ export async function createDocumentChain() {
 	return { chain, formatInstructions };
 }
 
-export async function getAnswerFromLLM(url: string) {
+
+export const getAnswerFromLLM = traceable(async function(url: string) {
 	const document = await loadUrl(url);
 	const markdown = document.markdown;
 	const html = document.html;
@@ -122,10 +128,9 @@ export async function getAnswerFromLLM(url: string) {
 
 	const response = await chain.invoke({
 		context: markdown,
-		question:
-			'Please analyze the provided website URL and perform the following tasks. Return the results in JSON format.\n1. Identify the website and its navigation: extract the website name, and list its main navigation items. If there are sub-menus, list them as well.\n2. Summarize the website\'s overall purpose and key contents under each navigation item.\n3. Suggest the next move for the user based on the provided content, ensuring the suggestion aligns with the website\'s main focus and the user\'s potential interests. This could be user\'s next action or question for you.',
+		question: USER_MSG,
 		format_instructions: formatInstructions,
 	});
 
 	return { response, metadata, screenshot };
-}
+})
