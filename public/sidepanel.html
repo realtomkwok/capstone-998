@@ -4,30 +4,30 @@
 	<meta charset="UTF-8" />
 	<title>My Sidepanel</title>
 	<link rel="stylesheet" href="sidepanel.css" />
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+		rel="stylesheet">
+	<link rel="stylesheet"
+		  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
-<body>
-<div class="app">
-	<p class="app-heading">Clara</p>
 
-	<hr class="divider" />
-
-	<p>Current URL: <span id="currentUrl"></span></p>
-	<p>FireCrawl API Key:<span class="caption" id="fireCrawlApiKey"></span></p>
-	<p>Open AI API Key:<span class="caption" id="openAiApiKey"></span></p>
-
-	<hr class="divider" />
-
-	<p class="title">Summary</p>
-	<p id="summary"></p>
-
-	<hr class="divider" />
-
-	<p class="title">Answer from LLM:</p>
-	<p id="answer"></p>
-
-	<button id="btn-summarize" class="btn">Summarize</button>
-	<button id="btn-read" class="btn">Read Answer</button>
-	<button id="btn-stop" class="btn">Stop Reading</button>
+<body class="root">
+<div id="app" class="app inter-600">
+	<section>
+		<div class="heading-1">
+			<span class="material-symbols-rounded">clarify</span>
+			<span>Summary</span>
+		</div>
+		<div id="devMessage" class="caption">This is a development message. It
+			will be removed in the production build.
+		</div>
+		<div>
+			<p id="summary" class="body">Summarizing the page...</p>
+			<button id="btn-read" class="button">Read</button>
+		</div>
+	</section>
 </div>
 
 <script src="sidepanel.js"></script>
@@ -39,4 +39,5 @@
   To create a production bundle, use `npm run build`.
 -->
 </body>
+
 </html>

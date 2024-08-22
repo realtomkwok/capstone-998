@@ -3,59 +3,43 @@
 import './sidepanel.css';
 import { getAnswerFromLLM } from './lib/helper';
 
-(function() {
-	function container() {
-		// Display the API keys for testing
-		const button = document.getElementById('btn');
-		let currentUrl
-		document.getElementById('fireCrawlApiKey').innerText = process.env.FIRECRAWL_API_KEY
-		document.getElementById('openAiApiKey').innerText = process.env.OPENAI_API_KEY
+(async function() {
+	async function app() {
+		try {
+			chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+				if (request.type === 'UPDATE_URL') {
+					// Display the developer message in the sidepanel
+					const devMessage = document.getElementById('devMessage');
+					const currentUrl = request.url;
+					const url = document.createElement('div');
+					url.innerText = currentUrl;
+					devMessage.appendChild(url);
 
-		// Get the current URL
-		async function getCurrentTab() {
-			let queryOptions = { active: true, currentWindow: true }
-			let [tab] = await chrome.tabs.query(queryOptions)
-			return tab
+					try {
+						getAnswerFromLLM(currentUrl).then((response) => {
+							if (response) {
+								// Display the answer in the sidepanel
+								const summary = document.getElementById('summary');
+								summary.innerText = response.response.summary;
+								devMessage.appendChild(document.createTextNode(`${response.metadata.toString()}`));
+							}
+						});
+					} catch (error) {
+						const errors = document.createElement('div');
+						errors.className = 'error';
+						devMessage.appendChild(errors);
+						errors.innerHTML = `<p>Error: ${error}</p>`;
+					}
+				}
+			})
+		} catch (error) {
+			console.error('Error::', error);
 		}
-
-		getCurrentTab().then(tab => {
-			document.getElementById('currentUrl').innerText = tab.url
-			currentUrl = tab.url
-		})
-
-
-		// Pressing the button will trigger the function
-		button.addEventListener('click', async () => {
-			const answer = await getAnswerFromLLM(await currentUrl);
-			// Read the summary
-			const summary = answer.response.summary;
-			chrome.tts.speak(summary);
-			document.getElementById('summary').innerText = summary;
-			document.getElementById('answer').innerHTML = `
-			<ul>
-</ul>
-			`;
-		});
-
-		// Stop the reading
-
 	}
 
+	// Render the app
 	document.addEventListener('DOMContentLoaded', () => {
-		container();
-	});
+		app();
+	})
 
-	// Communicate with background file by sending a message
-	chrome.runtime.sendMessage(
-		{
-			type: 'GREETINGS',
-			payload: {
-				message: 'Hello from the sidepanel!',
-			},
-		},
-		(response) => {
-			console.log(response.message);
-		},
-	);
-
-})();
+})()
