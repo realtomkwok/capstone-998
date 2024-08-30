@@ -1,0 +1,39 @@
+{
+	"response": {
+		"summary": "You are visiting the ABC News website, which features a variety of news stories including politics, world events, business, sports, and lifestyle topics. The top stories currently include a tragic incident involving a teenage boy's suicide in a youth detention center, political developments regarding the census and LGBT questions, and significant events in sports such as the US Open.",
+		"keyContent": [
+			{
+				"name": "Teenage boy dies by suicide inside Banksia Hill",
+				"url": "https://abc.net.au/news/2024-08-30/banksia-hill-suicide-second-child-death-wa-youth-detention-/104290074",
+				"description": "A 17-year-old boy has tragically taken his own life inside WA's Banksia Hill youth detention center, marking the second such incident in less than a year. This story highlights ongoing concerns about the treatment of youth in detention facilities."
+			},
+			{
+				"name": "Albanese backs down on census decision",
+				"url": "https://abc.net.au/news/2024-08-30/albanese-says-question-on-sexuality-will-be-tested-for-census/104289570",
+				"description": "Prime Minister Anthony Albanese has reversed his decision to exclude a question about sexual orientation from the upcoming census, responding to public and political pressure. This decision is significant for the representation of the LGBT community in Australia."
+			},
+			{
+				"name": "Sydney MP Rory Amon quits Liberal Party",
+				"url": "https://abc.net.au/news/2024-08-30/nsw-mp-rory-amon-charged-sexual-offences-pittwater/104290978",
+				"description": "Rory Amon, a member of the New South Wales Parliament, has resigned from the Liberal Party after being charged with serious sexual offences. This incident raises questions about accountability and conduct within political parties."
+			},
+			{
+				"name": "Carlos Alcaraz stunned by unseeded underdog",
+				"url": "https://abc.net.au/news/2024-08-30/carlos-alcaraz-stunned-by-underdog-in-us-open-upset/104291786",
+				"description": "In a surprising turn of events at the US Open, top seed Carlos Alcaraz was defeated by 74th-ranked Botic van de Zandschulp, ending his impressive 15-match grand slam unbeaten streak. This upset has sent shockwaves through the tennis community."
+			}
+		]
+	},
+	"metadata": {
+		"title": "ABC News - Read the Latest News & Headlines",
+		"description": "Read the latest news headlines and in-depth analysis from an independent and trusted source. Check the latest news on business, sports, weather, and more.",
+		"ogTitle": "ABC News - Read the Latest News & Headlines",
+		"ogDescription": "Read the latest news headlines and in-depth analysis from an independent and trusted source. Check the latest news on business, sports, weather, and more.",
+		"ogUrl": "https://www.abc.net.au/news/",
+		"ogImage": "https://live-production.wcms.abc-cdn.net.au/7ee6f190de6d7dbb04203e514bfae9ec?impolicy=wcms_crop_resize&cropH=700&cropW=700&xPos=0&yPos=0&width=862&height=862&imformat=generic",
+		"ogLocaleAlternate": [],
+		"screenshot": "https://alttmdsdujxrfnakrkyi.supabase.co/storage/v1/object/public/media/screenshot-7910996.png",
+		"pageStatusCode": 200
+	},
+	"screenshot": "https://alttmdsdujxrfnakrkyi.supabase.co/storage/v1/object/public/media/screenshot-7910996.png"
+}

@@ -1,7 +1,18 @@
 html, body, #app, #app > div {
 	height: 100%;
+	font-family: Inter, sans-serif;
+	font-weight: normal;
 }
 
 body {
 	margin: 0;
+}
+
+.chats-anchor {
+	height: 200px;
+	overflow: auto;
+}
+
+.cards-container {
+	height: 2000px;
 }
