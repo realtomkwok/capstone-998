@@ -12,7 +12,6 @@ import {
 	SUMMARY_INSTRUCTIONS,
 	SYSTEM_MSG, USER_MSG,
 } from './prompts';
-import { traceable } from 'langsmith/traceable';
 
 export async function loadUrl(url: string) {
 	const crawlLoader: FirecrawlApp = new FirecrawlApp({
@@ -115,7 +114,6 @@ export async function createDocumentChain() {
 
 	return { chain, formatInstructions };
 }
-
 
 export async function getAnswerFromLLM(url: string) {
 	const document = await loadUrl(url);
