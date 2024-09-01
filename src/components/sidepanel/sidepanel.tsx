@@ -8,9 +8,8 @@ import { getAnswerFromLLM } from '@lib/helper';
 
 const ChatInput: React.FC = () => {
 	return (
-		<div>
-			<input type={'text'} />
-		</div>
+		<input type={'text'} className={'chat-input'}
+		       placeholder={'Type a message...'} />
 	);
 };
 
@@ -34,11 +33,12 @@ const Sidepanel: React.FC = () => {
 	return (
 		<mdui-layout full-height={true}>
 			<mdui-top-app-bar>
-				<mdui-top-app-bar-title>Title</mdui-top-app-bar-title>
-				<mdui-button-icon icon="settings"></mdui-button-icon>
+				<mdui-button-icon icon="menu"></mdui-button-icon>
+				<mdui-top-app-bar-title>Clara</mdui-top-app-bar-title>
+				<mdui-button-icon icon="tune"></mdui-button-icon>
 			</mdui-top-app-bar>
 			<mdui-bottom-app-bar fab-detach scroll-behavior="hide"
-			                     scroll-threshold={10}>
+			                     scroll-threshold={10} className="btm-app-bar">
 				<ChatInput />
 				<div style={{ flexGrow: 1 }}></div>
 				<mdui-fab icon="send"

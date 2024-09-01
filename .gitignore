@@ -6,6 +6,9 @@
 # production
 /build
 
+# trial fonts
+/public/fonts
+
 # misc
 .DS_Store
 

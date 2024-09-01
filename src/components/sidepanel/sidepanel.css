@@ -1,6 +1,6 @@
 html, body, #app, #app > div {
 	height: 100%;
-	font-family: Inter, sans-serif;
+	font-family: CircularXXTrialWeb-Medium, sans-serif;
 	font-weight: normal;
 }
 
@@ -15,4 +15,13 @@ body {
 
 .cards-container {
 	height: 2000px;
+}
+
+.chat-input {
+	all: initial;
+	font-family: Inter, sans-serif;
+	font-weight: normal;
+	font-size: 16px;
+	min-width: 80%;
+	border: 0;
 }
