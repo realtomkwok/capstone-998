@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .typo-title-large {
+        @apply text-title-large font-title-large leading-title-large tracking-title-large;
+    }
+
+    .typo-title-mediem {
+        @apply text-title-medium font-title-medium leading-title-medium tracking-title-medium;
+    }
+
+    .typo-title-small {
+        @apply text-title-small font-title-small leading-title-small tracking-title-small;
+    }
+
+    .typo-headline-large {
+        @apply text-headline-large font-headline-large leading-headline-large tracking-headline-large;
+    }
+
+    .typo-headline-medium {
+        @apply text-headline-medium font-headline-medium leading-headline-medium tracking-headline-medium;
+    }
+
+    .typo-headline-small {
+        @apply text-headline-small font-headline-small leading-headline-small tracking-headline-small;
+    }
+
+    .typo-body-large {
+        @apply text-body-large font-body-large leading-body-large tracking-body-large;
+    }
+
+    .typo-body-medium {
+        @apply text-body-medium font-body-medium leading-body-medium tracking-body-medium;
+    }
+
+    .typo-body-small {
+        @apply text-body-small font-body-small leading-body-small tracking-body-small;
+    }
+
+    .typo-label-large {
+        @apply text-label-large font-label-large leading-label-large tracking-label-large;
+    }
+
+    .typo-label-medium {
+        @apply text-label-medium font-label-medium leading-label-medium tracking-label-medium;
+    }
+
+    .typo-label-small {
+        @apply text-label-small font-label-small leading-label-small tracking-label-small;
+    }
+}

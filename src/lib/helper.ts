@@ -115,7 +115,31 @@ export async function createDocumentChain() {
 	return { chain, formatInstructions };
 }
 
-export async function getAnswerFromLLM(url: string) {
+export interface LLMResponse {
+	response: {
+		summary: string
+		keyContent: {
+			name: string
+			url: string
+			description: string
+		}[]
+	};
+	metadata: {
+		title: string
+		description: string
+		ogTitle: string
+		ogDescription: string
+		ogUrl: string
+		ogImage: string
+		ogLocaleAlternate: string
+		screenshot: string
+		sourceUrl: string
+		pageStatusCode: number
+	};
+	screenshot: string;
+}
+
+export async function getAnswerFromLLM(url: string): Promise<LLMResponse> {
 	const document = await loadUrl(url);
 	const markdown = document.markdown;
 	const html = document.html;
@@ -132,4 +156,5 @@ export async function getAnswerFromLLM(url: string) {
 
 	return { response, metadata, screenshot };
 }
+
 

@@ -1,11 +1,10 @@
 html, body, #app, #app > div {
 	height: 100%;
-	font-family: CircularXXTrialWeb-Medium, sans-serif;
-	font-weight: normal;
 }
 
 body {
 	margin: 0;
+	color: var(--mdui-color-on-surface);
 }
 
 .chats-anchor {
@@ -17,11 +16,7 @@ body {
 	height: 2000px;
 }
 
-.chat-input {
+input {
+	-webkit-appearance: none;
 	all: initial;
-	font-family: Inter, sans-serif;
-	font-weight: normal;
-	font-size: 16px;
-	min-width: 80%;
-	border: 0;
 }

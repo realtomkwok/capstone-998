@@ -35,6 +35,13 @@ const config = (env, argv) =>
 			}),
 
 		],
+		devServer: {
+			header: {
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+				'Access-Control-Allow-Headers': 'Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, x-ijt, Referer, User-Agent',
+			},
+		},
 		devtool: argv.mode === 'production' ? false : 'source-map',
 	});
 

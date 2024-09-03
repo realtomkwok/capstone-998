@@ -48,7 +48,7 @@ const common = {
 			// Help webpack in understanding CSS files imported in .js files
 			{
 				test: /\.css$/,
-				use: [MiniCssExtractPlugin.loader, 'css-loader'],
+				use: ['style-loader', 'css-loader', 'postcss-loader'],
 			},
 			// Check for images imported in .js files and
 			{
@@ -75,10 +75,10 @@ const common = {
 				},
 			],
 		}),
-		// Extract CSS into separate files
-		new MiniCssExtractPlugin({
-			filename: '[name].css',
-		}),
+		// // Extract CSS into separate files
+		// new MiniCssExtractPlugin({
+		// 	filename: '[name].css',
+		// }),
 	],
 };
 
