@@ -6,7 +6,6 @@ const webpack = require('webpack');
 
 const common = require('./webpack.common.js');
 const PATHS = require('./paths');
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const { TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin');
 
 // Merge webpack configuration files

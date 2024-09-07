@@ -1,7 +1,7 @@
-import Sidepanel from './components/sidepanel/sidepanel';
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import './global.css';
+import Sidepanel from './sidepanel/sidepanel';
 
 const root = ReactDOM.createRoot(document.getElementById('app') as HTMLElement);
 root.render(

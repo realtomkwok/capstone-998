@@ -51,3 +51,26 @@
         @apply text-label-small font-label-small leading-label-small tracking-label-small;
     }
 }
+
+html, body, #app, #app > div {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    color: var(--mdui-color-on-surface);
+}
+
+input {
+    -webkit-appearance: none;
+    all: unset;
+}
+
+.chats-anchor {
+    height: 200px;
+    overflow: auto;
+}
+
+.cards-container {
+    height: 2000px;
+}
