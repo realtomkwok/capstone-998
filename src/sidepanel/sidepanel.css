@@ -1,0 +1,9 @@
+.chats-anchor {
+    height: 200px;
+    overflow: auto;
+}
+
+.cards-container {
+    height: 2000px;
+}
+

@@ -1,24 +1,28 @@
 import React from 'react';
-import { LLMProvider, LLMResponse } from '@lib/interface';
+import { LLMProvider, LLMOutput, LLMChat } from '@lib/interface';
 import { getAnswerFromLLM } from '@lib/helper';
 
 import 'mdui';
 import 'mdui/mdui.css';
 
 const Main = () => {
-	const [chats, setChats] = React.useState<LLMResponse[] | never[]>([]);
+	const [chats, setChats] = React.useState<LLMChat[] | never>([]);
+	const [responses, setResponses] = React.useState<LLMOutput[] | never[]>([]);
 	const [input, setInput] = React.useState('');
 	const [status, setStatus] = React.useState('idle');
 	const [llmProvider, setLlmProvider] = React.useState<LLMProvider>('openai');
 
+	// Fetch response from LLM
+	const fetchResponse = async (input: string) => {
+		return await getAnswerFromLLM(input, llmProvider);
+	};
+
 	// Create a new chat card
-	const ChatCard = (props: { url: string; llmProvider: LLMProvider }) => {
-		const [res, setRes] = React.useState<LLMResponse>();
-
-		getAnswerFromLLM(props.url, props.llmProvider).then((res) =>
-			setRes(res)
-		);
-
+	const ChatCard = (props: {
+		url: string;
+		llmProvider: LLMProvider;
+		res: LLMOutput;
+	}) => {
 		return (
 			<mdui-card variant="filled" clickable>
 				<div className={'w-full p-4'}>
@@ -28,7 +32,7 @@ const Main = () => {
 								'typo-headline-medium text-left text-on-surface'
 							}
 						>
-							{res?.response.summary}
+							{props.res.response.summary}
 						</h2>
 						<p
 							className={
@@ -51,12 +55,13 @@ const Main = () => {
 	const ChatsWrapper = () => {
 		return (
 			<div className={'flex gap-8'}>
-				{chats.map((res, index) => (
+				{chats.map((chat) => (
 					// TODO: `url` should be replaced by user's input
 					<ChatCard
-						key={index}
-						url={input}
+						key={chat.id}
 						llmProvider={llmProvider}
+						url={chat.input!}
+						res={chat.output!}
 					/>
 				))}
 			</div>
@@ -67,7 +72,7 @@ const Main = () => {
 	const EmptyState = () => {
 		return (
 			<div>
-				<p className="text-left text-display-large font-display-large text-on-surface leading-display-large tracking-display-large">
+				<p className="text-left text-display-large font-display-large text-on-surface leading-display-large tracking-display-large mb-2">
 					Hi! I'm Clara!
 				</p>
 				<p
@@ -85,10 +90,15 @@ const Main = () => {
 	const sendChat = async (input: string) => {
 		if (input != '') {
 			setInput('');
-
-			await getAnswerFromLLM(input, llmProvider).then((res) =>
-				setChats([...chats, res])
-			);
+			setStatus('loading');
+			setChats([
+				...chats,
+				{
+					id: Date.now().toString(),
+					input: input,
+					output: await fetchResponse(input),
+				},
+			]);
 		} else {
 			alert('Please enter a valid URL');
 		}
@@ -97,6 +107,29 @@ const Main = () => {
 	return (
 		<>
 			<mdui-layout-main>
+				<div className="m-4">
+					<mdui-segmented-button-group
+						id="segmented-button-group"
+						full-width
+						selects="single"
+						value="openai"
+					>
+						<mdui-segmented-button
+							onClick={() => setLlmProvider('openai')}
+							value="openai"
+							className="controls-border"
+						>
+							OpenAI
+						</mdui-segmented-button>
+						<mdui-segmented-button
+							onClick={() => setLlmProvider('anthropic')}
+							value="anthropic"
+							className="controls-border"
+						>
+							Anthropic
+						</mdui-segmented-button>
+					</mdui-segmented-button-group>
+				</div>
 				<div className={'p-4 chats-anchor'}>
 					{chats.length === 0 ? <EmptyState /> : <ChatsWrapper />}
 				</div>

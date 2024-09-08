@@ -7,7 +7,7 @@
         @apply text-title-large font-title-large leading-title-large tracking-title-large;
     }
 
-    .typo-title-mediem {
+    .typo-title-medium {
         @apply text-title-medium font-title-medium leading-title-medium tracking-title-medium;
     }
 
@@ -58,19 +58,9 @@ html, body, #app, #app > div {
 
 body {
     margin: 0;
-    color: var(--mdui-color-on-surface);
 }
 
 input {
     -webkit-appearance: none;
     all: unset;
-}
-
-.chats-anchor {
-    height: 200px;
-    overflow: auto;
-}
-
-.cards-container {
-    height: 2000px;
 }

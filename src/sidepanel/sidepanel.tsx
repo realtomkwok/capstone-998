@@ -3,6 +3,7 @@ import React from 'react';
 
 import 'mdui';
 import 'mdui/mdui.css';
+import './sidepanel.css';
 
 // Import pages
 import Main from './pages/main';

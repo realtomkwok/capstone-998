@@ -1,10 +1,21 @@
-export interface LLMResponse {
+export interface LLMOutput {
 	response: {
-		summary: string;
-		keyContent: {
+		answer: string;
+		pageLayout: {
 			name: string;
-			url: string;
 			description: string;
+			url: string;
+		}[];
+		navigation: {
+			name: string;
+			description: string;
+			url: string;
+		}[];
+		topStories?: {
+			title: string;
+			ogTitle: string;
+			description: string;
+			url: string;
 		}[];
 	};
 	metadata: {
@@ -23,3 +34,9 @@ export interface LLMResponse {
 }
 
 export type LLMProvider = 'openai' | 'anthropic';
+
+export interface LLMChat {
+	id: string | undefined;;
+	input: string | undefined | never;;
+	output: LLMOutput | undefined | never;;
+}

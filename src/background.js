@@ -29,8 +29,8 @@ import { getAnswerFromLLM } from './lib/helper';
 
 // Allows users to open the side panel by clicking on the action toolbar icon
 chrome.sidePanel
-  .setPanelBehavior({ openPanelOnActionClick: true })
-  .catch((error) => console.error(error));
+	.setPanelBehavior({ openPanelOnActionClick: true })
+	.catch((error) => console.error(error));
 
 // Read the URL of the current tab
 chrome.tabs.onActivated.addListener(async () => {
