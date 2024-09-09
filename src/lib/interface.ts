@@ -1,28 +1,11 @@
-export interface LLMOutput {
-	response: LLMResponse
-	metadata: {
-		title: string;
-		description: string;
-		ogTitle: string;
-		ogDescription: string;
-		ogUrl: string;
-		ogImage: string;
-		ogLocaleAlternate: string;
-		screenshot: string;
-		sourceUrl: string;
-		pageStatusCode: number;
-	};
-	screenshot: string;
-}
-
 export interface LLMResponse {
 	answer: string;
-	pageLayout: {
+	pageLayout?: {
 		name: string;
 		description: string;
 		url: string;
 	}[];
-	navigation: {
+	navigation?: {
 		name: string;
 		description: string;
 		url: string;
@@ -40,7 +23,7 @@ export type LLMProvider = 'openai' | 'anthropic';
 export interface LLMChat {
 	id: string | undefined
 	input: string | undefined | never
-	output: LLMOutput | undefined | never
+	output: LLMResponse | undefined | never
 }
 
 export interface ScrapePageData {

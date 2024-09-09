@@ -1,23 +1,45 @@
-import React from 'react';
-import { LLMProvider, LLMOutput, LLMChat } from '@lib/interface';
-import { getAnswerFromLLM } from '@lib/helper';
+/// <reference types="chrome"/>
 
 import 'mdui';
 import 'mdui/mdui.css';
 
-const Main = () => {
-	const [chats, setChats] = React.useState<LLMChat[] | never>([]);
-	const [responses, setResponses] = React.useState<LLMOutput[] | never[]>([]);
+import { LLMChat, LLMProvider, LLMResponse } from '@lib/interface';
+import React, { useEffect } from 'react';
+import { startLLM } from '@lib/helper';
+
+const Main = (props: {
+	url: string | undefined;
+	isLoading: boolean;
+	initResponse: LLMResponse | undefined;
+}) => {
+	const [chats, setChats] = React.useState<LLMChat[]>([]);
 	const [input, setInput] = React.useState('');
-	const [status, setStatus] = React.useState('idle');
 	const [llmProvider, setLlmProvider] = React.useState<LLMProvider>('openai');
-	
+	const [isLoading, setIsLoading] = React.useState(props.isLoading);
+
+	useEffect(() => {
+		if (
+			props.url &&
+			props.initResponse &&
+			!isLoading &&
+			chats.length === 0
+		) {
+			setChats([
+				{
+					id: Date.now().toString(),
+					input: props.url,
+					output: props.initResponse,
+				},
+			]);
+			setIsLoading(false);
+		}
+	}, [props.url, props.isLoading, llmProvider]);
 
 	// Create a new chat card
 	const ChatCard = (props: {
+		input: string;
+		output: LLMResponse;
 		url: string;
-		llmProvider: LLMProvider;
-		res: LLMOutput;
 	}) => {
 		return (
 			<mdui-card variant="filled" clickable>
@@ -28,7 +50,7 @@ const Main = () => {
 								'typo-headline-medium text-left text-on-surface'
 							}
 						>
-							{props.res.response.answer}
+							{props.output.answer || 'No answer available'}
 						</h2>
 						<p
 							className={
@@ -48,59 +70,60 @@ const Main = () => {
 	};
 
 	// Create a wrapper for all chat cards
-	const ChatsWrapper = () => {
+	const ChatsWrapper = ({
+		chats,
+		url,
+	}: {
+		chats: LLMChat[];
+		url: string | undefined;
+	}) => {
+		console.log('Rendering with chats:', chats);
 		return (
 			<div className={'flex gap-8'}>
 				{chats.map((chat) => (
 					// TODO: `url` should be replaced by user's input
 					<ChatCard
 						key={chat.id}
-						llmProvider={llmProvider}
-						url={chat.input!}
-						res={chat.output!}
+						url={url || ''}
+						input={chat.input || ''}
+						output={chat.output || { answer: 'No answer available.' }}
 					/>
 				))}
 			</div>
 		);
 	};
 
-	// If no chats, show welcome message
-	const EmptyState = () => {
-		return (
-			<div>
-				<p className="text-left text-display-large font-display-large text-on-surface leading-display-large tracking-display-large mb-2">
-					Hi! I'm Clara!
-				</p>
-				<p
-					className={
-						'font-normal text-on-surface-variant text-display-medium leading-display-medium tracking-display-medium'
-					}
-				>
-					How can I help you today?
-				</p>
-			</div>
-		);
-	};
-
 	// Send a chat message to the chat list
-	const sendChat = async (input: string) => {
-		const fetchResponse = async (input: string) => {return await getAnswerFromLLM(input, input, llmProvider)};
-		
+	async function sendChat(input: string) {
+		const fetchResponse = async (input: string): Promise<LLMResponse> => {
+			// TODO: Replace `startLLM` with `getAnswerFromLLM` with chat history support: https://js.langchain.com/v0.2/docs/how_to/qa_chat_history_how_to/
+			try {
+				return await startLLM(input, llmProvider);
+			} catch (error) {
+				console.error('Error fetching response', error);
+				return {
+					answer: "I'm sorry, I couldn't find an answer for that.",
+				};
+			}
+		};
+
 		if (input != '') {
 			setInput('');
-			setStatus('loading');
-			setChats([
-				...chats,
+			setIsLoading(true);
+			const output = await fetchResponse(input);
+			setChats((prevChats) => [
+				...prevChats,
 				{
 					id: Date.now().toString(),
 					input: input,
-					output: await fetchResponse(input),
+					output: output,
 				},
 			]);
+			setIsLoading(false);
 		} else {
 			alert('Please enter a valid URL');
 		}
-	};
+	}
 
 	return (
 		<>
@@ -129,7 +152,7 @@ const Main = () => {
 					</mdui-segmented-button-group>
 				</div>
 				<div className={'p-4 chats-anchor'}>
-					{chats.length === 0 ? <EmptyState /> : <ChatsWrapper />}
+					<ChatsWrapper chats={chats} url={props.url} />
 				</div>
 			</mdui-layout-main>
 
@@ -156,5 +179,4 @@ const Main = () => {
 		</>
 	);
 };
-
-export default Main;
+export default Main

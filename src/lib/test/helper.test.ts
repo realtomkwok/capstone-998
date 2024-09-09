@@ -1,6 +1,6 @@
 import logger from './logger'
-import { startLLMProcess } from '@lib/helper';
-import { LLMProvider, LLMOutput } from '@lib/interface';
+import { startLLM } from '@lib/helper';
+import { LLMProvider, LLMResponse } from "@lib/interface"
 
 jest.mock('../helper', () => ({
     ...jest.requireActual('@lib/helper'),
@@ -42,10 +42,8 @@ describe('startLLMProcess', () => {
         mockCreateDocumentChain.mockResolvedValue({
             chain: {
                 invoke: jest.fn().mockResolvedValue({
-                    response: 'mock response',
-                    metadata: 'mock metadata',
-                    screenshot: 'mock screenshot'
-                } as unknown as LLMOutput)
+                    // TODO: Fix this
+                } as unknown as LLMResponse)
             },
             formatInstructions: 'mock instructions'
         })
@@ -56,7 +54,7 @@ describe('startLLMProcess', () => {
         try {
             logger.info('Starting LLM process')
 
-            const result = await startLLMProcess(mockUrl, mockProvider, mockChunkSize, mockChunkOverlap)
+            const result = await startLLM(mockUrl, mockProvider, mockChunkSize, mockChunkOverlap)
 
             logger.info('LLM process completed')
             expect(result).toEqual({

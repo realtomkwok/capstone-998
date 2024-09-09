@@ -11,10 +11,8 @@ import { z } from "zod"
 import { StructuredOutputParser } from "langchain/output_parsers"
 import { RunnableSequence } from "@langchain/core/runnables"
 import { ChatPromptTemplate } from "@langchain/core/prompts"
-import { VectorStoreRetriever } from "@langchain/core/vectorstores"
-
 import { ASSISTANT_MSG, INIT_PROMPT, SYSTEM_MSG, USER_MSG } from "@lib/prompts"
-import { LLMProvider, LLMOutput } from "@lib/interface"
+import { LLMProvider, ScrapePageData, LLMResponse } from "@lib/interface"
 import { OUTPUT_SCHEMES } from "./responses"
 
 /**
@@ -23,7 +21,7 @@ import { OUTPUT_SCHEMES } from "./responses"
  * @returns An object containing the scraped content, metadata, and links on the page
  */
 
-export async function loadUrl(url: string) {
+export async function loadUrl(url: string): Promise<ScrapePageData> {
     // TODO: Use another webpage loader if FirecrawlApp is not available: https://js.langchain.com/v0.1/docs/integrations/document_loaders/web_loaders/web_playwright/
     
     // Log the URL being loaded
@@ -49,13 +47,15 @@ export async function loadUrl(url: string) {
             })
         
         console.log(`URL loaded: ${url}`)
-        console.log(scrapeResponse)
+        console.log(scrapeResponse.data)
         
         return {
-            html: scrapeResponse.data.html,
+            content: scrapeResponse.data.content,
             markdown: scrapeResponse.data.markdown,
+            html: scrapeResponse.data.html,
+            linksOnPage: scrapeResponse.data.linksOnPage,
             metadata: scrapeResponse.data.metadata,
-            links: scrapeResponse.data.links,
+            screenshot: scrapeResponse.data.screenshot,
         }
         
     } catch (error) {
@@ -123,7 +123,7 @@ export async function embedDocuments(
 ) {
     try {
         console.log("Starting document embedding process")
-        const embedding = new OpenAIEmbeddings()
+        const embedding = new OpenAIEmbeddings({openAIApiKey: process.env.OPENAI_API_KEY})
         console.log("Created OpenAIEmbeddings instance")
         
         const VectorStore = await MemoryVectorStore.fromDocuments(
@@ -157,8 +157,9 @@ export async function createDocumentChain(
 			case 'openai':
 				console.log('Initializing OpenAI model');
 				model = new ChatOpenAI({
-					modelName: 'gpt-4o',
+					modelName: 'gpt-4o-mini',
 					temperature: 0,
+            apiKey: process.env.OPENAI_API_KEY,
 				});
 				break;
 			case 'anthropic':
@@ -166,6 +167,7 @@ export async function createDocumentChain(
 				model = new ChatAnthropic({
 					model: 'claude-3-5-sonnet-20240620',
 					temperature: 0,
+            apiKey: process.env.ANTHROPIC_API_KEY,
 				});
 				break;
 		}
@@ -206,12 +208,12 @@ export async function createDocumentChain(
  * @return The response from the LLM pipeline
  */
 
-export async function startLLMProcess(
+export async function startLLM(
     url: string,
     provider: LLMProvider,
     chunkSize: number    = 1000,
     chunkOverlap: number = 200,
-): Promise<LLMOutput> {
+): Promise<LLMResponse> {
     try {
         console.log(`Starting LLM process for URL: ${url}`)
         
@@ -219,20 +221,20 @@ export async function startLLMProcess(
         const page = await loadUrl(url)
         console.log("Page loaded successfully")
         const rawMarkdown = page.markdown
-        const rawHtml = page.html
+        // const rawHtml = page.html
         
-        // Preprocess the document
-        console.log("Preprocessing document...")
-        const chunks = await splitDocument(
-            rawHtml,
-            rawMarkdown,
-            chunkSize,
-            chunkOverlap,
-        )
-        console.log(`Document split into ${chunks.length} chunks`)
-        
-        const retriever = await embedDocuments(chunks)
-        console.log(`Document chunks: ${chunks.length} embedded into retriever`)
+        // // Preprocess the document
+        // console.log("Preprocessing document...")
+        // const chunks = await splitDocument(
+        //     rawHtml,
+        //     rawMarkdown,
+        //     chunkSize,
+        //     chunkOverlap,
+        // )
+        // console.log(`Document split into ${chunks.length} chunks`)
+        //
+        // const retriever = await embedDocuments(chunks)
+        // console.log(`Document chunks: ${chunks.length} embedded into retriever`)
         
         const { chain, formatInstructions } = await createDocumentChain(provider)
         console.log("Document chain created")
@@ -246,7 +248,7 @@ export async function startLLMProcess(
         console.log("Chain invoked successfully")
         console.log("LLM Response:", response)
         
-        return response as LLMOutput
+        return response as LLMResponse
         
     } catch (error) {
         console.error("Error in startLLMProcess:", error)
@@ -254,6 +256,11 @@ export async function startLLMProcess(
     }
 }
 
+// export async function getAnswerFromLLM(input: string, provider: LLMProvider) {
+//     const urlPattern = new RegExp(
+//         "^(https?|ftp)://[a-zA-Z0-9-.]+.[a-zA-Z]{2,}(:[0-9]{2,})?(/.*)?$",
+//     )
+// }
 
 export function downloadResponse(
     content: string,
