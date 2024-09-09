@@ -8,9 +8,10 @@ import { z } from "zod"
 import { StructuredOutputParser } from "langchain/output_parsers"
 import { RunnableSequence } from "@langchain/core/runnables"
 import { ChatPromptTemplate } from "@langchain/core/prompts"
-import { ASSISTANT_MSG, SYSTEM_MSG } from "@lib/prompts"
+import { ASSISTANT_MSG, INITIAL_QUESTION, SYSTEM_MSG } from "@lib/prompts"
 import { LLMProvider, LLMOutput } from "@lib/interface"
 import { OUTPUT_SCHEMES } from "./responses"
+import { PageData } from "./interface"
 
 /**
  * Loads and scrapes the content of a given URL using FirecrawlApp.
@@ -18,7 +19,7 @@ import { OUTPUT_SCHEMES } from "./responses"
  * @returns An object containing the scraped content, metadata, and links on the page
  */
 
-export async function loadUrl(url: string) {
+export async function loadUrl(url: string): Promise<PageData> {
 	// Log the URL being loaded
 	console.log(`Starting to load URL: ${url}`);
 
@@ -105,7 +106,7 @@ export async function embedDocuments(
         chunks,
         embedding,
     )
-    
+
     return VectorStore.asRetriever()
 }
 
@@ -114,7 +115,7 @@ export async function embedDocuments(
  * @returns An object containing the document chain and format instructions
  */
 export async function createDocumentChain(provider: LLMProvider) {
-    
+
     let model;
     switch (provider) {
         case "openai":
@@ -132,11 +133,11 @@ export async function createDocumentChain(provider: LLMProvider) {
         default:
             throw new Error("Unsupported provider");
     }
-    
+
     const outputSchema: z.ZodObject<any, any> = OUTPUT_SCHEMES("news")
-    
+
     const parser = StructuredOutputParser.fromZodSchema(outputSchema)
-    
+
     const chain = RunnableSequence.from([
         ChatPromptTemplate.fromMessages([
             ["system", SYSTEM_MSG],
@@ -149,31 +150,45 @@ export async function createDocumentChain(provider: LLMProvider) {
         model,
         parser,
     ])
-    
+
     const formatInstructions = parser.getFormatInstructions()
-    
+
     return { chain, formatInstructions }
 }
 
-export async function getAnswerFromLLM(url: string, provider: LLMProvider): Promise<LLMOutput> {
-    const document = await loadUrl(url)
-    const markdown = document.markdown
-    const html = document.html
-    const metadata = document.metadata
-    const screenshot = metadata.screenshot
-    
-    const question: string = `You're given an extracted web page content, and you need to help the user to understand and interact with the page. Initially, you need to summarize the page content, and then provide suggestions for what the user might be looking for. Here is an example of the expected response:\n 1. "You're visiting [Title of the website]. It looks like the page layout is [Description of the page layout]. The main content of the page includes [Description of the main content]. Would you like me to describe the page in more detail?" (Summarize the page and provide suggestions for what the user might be looking for)\n 2. "The top news stories including [News 1 summarized in a concise sentence], [News 2], [News 3], [News 4]." (Identify and summarize)\n 3. "If you're interested in [Topic 1], you can visit [Topic] section, ask me for more information!" (Suggest next moves)`
-    
-    
+export async function startLLMProcess(url: string, provider: LLMProvider, chunkSize: number = 1000, chunkOverlap: number = 200, k: number = 10, searchType: "similarity" | "mmr" = "similarity") {
+    // Load the page
+    const page = await loadUrl(url)
+    const rawMarkdown = page.markdown
+    const rawHtml = page.html
+
+    // Preprocess the document
+    const chunks = await splitDocument(rawHtml, rawMarkdown, chunkSize, chunkOverlap)
+    const retriever = await embedDocuments(chunks, k, searchType)
+
     const { chain, formatInstructions } = await createDocumentChain(provider)
-    
+
     const response = await chain.invoke({
-        context: markdown,
-        question: question,
+        question: INITIAL_QUESTION,
+        context: retriever,
         format_instructions: formatInstructions,
     })
-    
-    return { response, metadata, screenshot }
+
+    return response as LLMOutput
+}
+
+export async function getAnswerFromLLM(question: string, context: string, provider: LLMProvider): Promise<LLMOutput> {
+
+    const { chain, formatInstructions } = await createDocumentChain(provider)
+
+    const response = await chain.invoke({
+        question: question,
+        context: context,
+        format_instructions: formatInstructions,
+    })
+
+    return response as LLMOutput
+
 }
 
 export function downloadResponse(
