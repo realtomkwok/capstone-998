@@ -11,11 +11,7 @@ const Main = () => {
 	const [input, setInput] = React.useState('');
 	const [status, setStatus] = React.useState('idle');
 	const [llmProvider, setLlmProvider] = React.useState<LLMProvider>('openai');
-
-	// Fetch response from LLM
-	const fetchResponse = async (input: string) => {
-		return await getAnswerFromLLM(input, llmProvider);
-	};
+	
 
 	// Create a new chat card
 	const ChatCard = (props: {
@@ -32,7 +28,7 @@ const Main = () => {
 								'typo-headline-medium text-left text-on-surface'
 							}
 						>
-							{props.res.response.summary}
+							{props.res.response.answer}
 						</h2>
 						<p
 							className={
@@ -88,6 +84,8 @@ const Main = () => {
 
 	// Send a chat message to the chat list
 	const sendChat = async (input: string) => {
+		const fetchResponse = async (input: string) => {return await getAnswerFromLLM(input, input, llmProvider)};
+		
 		if (input != '') {
 			setInput('');
 			setStatus('loading');

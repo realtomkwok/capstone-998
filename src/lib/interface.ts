@@ -43,7 +43,7 @@ export interface LLMChat {
 	output: LLMOutput | undefined | never
 }
 
-export interface PageData {
+export interface ScrapePageData {
 	content: string;
 	markdown: string;
 	html: string;
@@ -53,11 +53,11 @@ export interface PageData {
 		description: string;
 		ogTitle: string;
 		ogDescription: string;
-		ogUrl: string;
 		ogImage: string;
+		ogUrl: string;
 		ogLocaleAlternate: string;
-		screenshot: string;
-		sourceUrl: string;
-		pageStatusCode: number;
-	}
+		sourceURL: string;
+		statusCode: number;
+	};
+	screenshot: string;
 }
