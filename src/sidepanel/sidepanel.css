@@ -7,3 +7,13 @@
     height: 2000px;
 }
 
+/* sidepanel.css */
+.settings {
+	padding: 20px;
+}
+
+.settings .buttons {
+	margin-top: 20px;
+}
+
+

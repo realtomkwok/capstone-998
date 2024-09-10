@@ -8,11 +8,13 @@ import './sidepanel.css';
 // Import pages
 import { LLMResponse } from "@lib/interface"
 import Main from "./pages/main";
+import SettingsPage from './settings';
 
 const Sidepanel: React.FC = () => {
 	const [url, setUrl] = React.useState<string | undefined>(undefined);
-	const [isLoading, setIsLoading] = useState<boolean>(false)
-	const [initResponse, setInitResponse] = useState<LLMResponse | undefined>(undefined)
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [initResponse, setInitResponse] = useState<LLMResponse | undefined>(undefined);
+	const [showSettings, setShowSettings] = useState<boolean>(false);
 
 	useEffect(() => {
 		// Send SIDEPANEL_READY message when the sidepanel is ready
@@ -21,11 +23,11 @@ const Sidepanel: React.FC = () => {
 		// Set up listener for incoming messages
 		const messageListener = (message: any) => {
 			if (message.type === 'UPDATE_URL') {
-				setUrl(message.url)
-				setIsLoading(true)
+				setUrl(message.url);
+				setIsLoading(true);
 			} else if (message.type === 'UPDATE_RESPONSE') {
-				setIsLoading(false)
-				setInitResponse(message.response)
+				setIsLoading(false);
+				setInitResponse(message.response);
 			}
 		};
 
@@ -37,6 +39,8 @@ const Sidepanel: React.FC = () => {
 		};
 	}, []);
 
+	const toggleSettings = () => setShowSettings(!showSettings);
+
 	return (
 		<mdui-layout full-height className={'font-medium'}>
 			<mdui-top-app-bar>
@@ -44,10 +48,15 @@ const Sidepanel: React.FC = () => {
 				<mdui-top-app-bar-title className="font-semibold">
 					Clara Dev
 				</mdui-top-app-bar-title>
-				<mdui-button-icon icon="tune"></mdui-button-icon>
+				<mdui-button-icon icon="tune" onClick={toggleSettings}></mdui-button-icon>
 			</mdui-top-app-bar>
-			<Main url={url} isLoading={isLoading} initResponse={initResponse} />
+			{showSettings ? (
+				<SettingsPage />
+			) : (
+				<Main url={url} isLoading={isLoading} initResponse={initResponse} />
+			)}
 		</mdui-layout>
 	);
 };
+
 export default Sidepanel;

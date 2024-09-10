@@ -1,0 +1,95 @@
+/* Ensure we are using the same font-family as specified in HTML */
+body {
+	font-family: 'Public Sans', sans-serif;
+}
+
+.app {
+	width: 300px; /* Adjust this width based on the actual side panel size */
+	background-color: #ffffff;
+	border-radius: 8px;
+	padding: 15px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+	margin: 10px auto;
+}
+
+h1 {
+	font-size: 16px;
+	text-align: center;
+	color: #5a5a5a;
+	margin-bottom: 20px;
+}
+
+label {
+	display: block;
+	font-weight: 600;
+	font-size: 12px;
+	margin: 8px 0 4px;
+}
+
+input[type="text"],
+select,
+input[type="range"] {
+	width: calc(100% - 20px); /* Full width minus padding */
+	padding: 8px;
+	margin-bottom: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-size: 12px;
+}
+
+input[type="range"] {
+	-webkit-appearance: none;
+	appearance: none;
+	background: transparent;
+	width: 100%;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 15px;
+	height: 15px;
+	background: #4CAF50;
+	border-radius: 50%;
+	cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+	height: 5px;
+	background: #ddd;
+}
+
+.buttons {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 10px;
+}
+
+button {
+	width: 80px; /* Fixed width */
+	height: 35px; /* Fixed height */
+	padding: 0; /* Remove padding to fit fixed height */
+	margin: 0 5px;
+	border: none;
+	color: white;
+	font-size: 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+button[type="button"] {
+	background-color: #4CAF50;
+}
+
+button[type="button"]:hover {
+	background-color: #45a049;
+}
+
+button[type="button"].cancel {
+	background-color: #f44336;
+}
+
+button[type="button"].cancel:hover {
+	background-color: #e53935;
+}
