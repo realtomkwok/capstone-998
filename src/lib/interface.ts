@@ -44,3 +44,9 @@ export interface ScrapePageData {
 	};
 	screenshot: string;
 }
+
+export interface MsgBackgroundToSidepanel {
+	type: 'GET_URL' | 'URL_RECEIVED' | 'UPDATE_URL' | 'UPDATE_RESPONSE' | 'SIDEPANEL_READY';
+	url?: string;
+	response?: LLMResponse;
+}

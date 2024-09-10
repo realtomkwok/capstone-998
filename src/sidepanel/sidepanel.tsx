@@ -3,10 +3,9 @@ import React, { useEffect, useState } from 'react';
 
 import 'mdui';
 import 'mdui/mdui.css';
-import './sidepanel.css';
 
 // Import pages
-import { LLMResponse } from "@lib/interface"
+import { LLMResponse, MsgBackgroundToSidepanel } from "@lib/interface"
 import Main from "./pages/main";
 
 const Sidepanel: React.FC = () => {
@@ -19,7 +18,7 @@ const Sidepanel: React.FC = () => {
 		chrome.runtime.sendMessage({ type: 'SIDEPANEL_READY' }).finally();
 
 		// Set up listener for incoming messages
-		const messageListener = (message: any) => {
+		const messageListener = (message: MsgBackgroundToSidepanel) => {
 			if (message.type === 'UPDATE_URL') {
 				setUrl(message.url)
 				setIsLoading(true)
@@ -46,7 +45,7 @@ const Sidepanel: React.FC = () => {
 				</mdui-top-app-bar-title>
 				<mdui-button-icon icon="tune"></mdui-button-icon>
 			</mdui-top-app-bar>
-			<Main url={url} isLoading={isLoading} initResponse={initResponse} />
+			<Main />
 		</mdui-layout>
 	);
 };
