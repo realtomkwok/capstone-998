@@ -1,6 +1,6 @@
-# Clara - Web Navigation Assistant for Visually Impaired Users
+# Clara - Web Navigation Assistant
 
-Clara is a Chrome extension designed to help visually impaired users navigate the web more easily.
+Clara is a Chrome extension designed to enhance web navigation by providing AI-powered insights and assistance.
 
 ## Building the Extension
 

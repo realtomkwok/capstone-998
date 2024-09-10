@@ -7,6 +7,8 @@
 
 import { startLLM } from "./lib/helper"
 
+let lastProcessedUrl = '';
+
 // Allows users to open the side panel by clicking on the action toolbar icon
 chrome.sidePanel
 	.setPanelBehavior({ openPanelOnActionClick: true })
@@ -22,8 +24,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		});
 	}
 });
-
-let lastProcessedUrl = ''
 
 async function handleTabChange(tab) {
 	try {

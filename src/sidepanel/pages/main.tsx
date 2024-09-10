@@ -7,33 +7,43 @@ import { LLMChat, LLMProvider, LLMResponse } from '@lib/interface';
 import React, { useEffect } from 'react';
 import { startLLM } from '@lib/helper';
 
-const Main = (props: {
-	url: string | undefined;
-	isLoading: boolean;
-	initResponse: LLMResponse | undefined;
-}) => {
-	const [chats, setChats] = React.useState<LLMChat[]>([]);
-	const [input, setInput] = React.useState('');
+const Main = () => {
+	const [chats, setChats] = React.useState<{ [url: string]: LLMChat[] }>({});
+	const [input, setInput] = React.useState<string>('');
 	const [llmProvider, setLlmProvider] = React.useState<LLMProvider>('openai');
-	const [isLoading, setIsLoading] = React.useState(props.isLoading);
+	const [isLoading, setIsLoading] = React.useState<boolean>(false);
+	const [currentUrl, setCurrentUrl] = React.useState<string | undefined>();
+
 
 	useEffect(() => {
-		if (
-			props.url &&
-			props.initResponse &&
-			!isLoading &&
-			chats.length === 0
-		) {
-			setChats([
-				{
-					id: Date.now().toString(),
-					input: props.url,
-					output: props.initResponse,
-				},
-			]);
-			setIsLoading(false);
-		}
-	}, [props.url, props.isLoading, llmProvider]);
+		const handleMessage = (message: any) => {
+			console.log('Received message:', message)
+
+			if (message.type === 'UPDATE_RESPONSE' && currentUrl) {
+				setChats((prevChats) => ({
+					...prevChats,
+					[currentUrl]: [
+						{
+							id: Date.now().toString(),
+							input: message.input,
+							output: message.response,
+						},
+							...(prevChats[currentUrl] || []),
+					],
+				}));
+				setIsLoading(false);
+			} else if (message.type === 'UPDATE_URL') {
+				setCurrentUrl(message.url);
+				setIsLoading(true);
+			}
+		};
+
+		chrome.runtime.onMessage.addListener(handleMessage);
+
+		return () => {
+			chrome.runtime.onMessage.removeListener(handleMessage);
+		};
+	}, [currentUrl]);
 
 	// Create a new chat card
 	const ChatCard = (props: {
@@ -42,25 +52,22 @@ const Main = (props: {
 		url: string;
 	}) => {
 		return (
-			<mdui-card variant="filled" clickable>
-				<div className={'w-full p-4'}>
-					<div>
-						<h2
+			<mdui-card variant="filled">
+				<div className={'w-full p-4 flex flex-col gap-4'}>
+					<div className="flex flex-col gap-2 w-full">
+						<div className="flex flex-row typo-body-large text-on-surface-variant gap-2 items-center w-full overflow-hidden overflow-ellipsis">
+							<mdui-icon style={{fontSize: '18px'}} name='public' />
+							<div className="overflow-auto overflow-ellipsis whitespace-nowrap max-w-full">{props.url}</div>
+						</div>
+						<div
 							className={
-								'typo-headline-medium text-left text-on-surface'
+								'typo-headline-small text-on-surface word-break'
 							}
 						>
 							{props.output.answer || 'No answer available'}
-						</h2>
-						<p
-							className={
-								'my-1 typo-body-large text-left text-on-surface-variant'
-							}
-						>
-							{props.url}
-						</p>
+						</div>
 					</div>
-					<div className={'flex flex-col gap-2'}>
+					<div className={'flex flex-row gap-2 justify-end'}>
 						<mdui-button-icon icon="download"></mdui-button-icon>
 						<mdui-button-icon icon="volume_up"></mdui-button-icon>
 					</div>
@@ -74,14 +81,15 @@ const Main = (props: {
 		chats,
 		url,
 	}: {
-		chats: LLMChat[];
+		chats: { [url: string]: LLMChat[] };
 		url: string | undefined;
 	}) => {
 		console.log('Rendering with chats:', chats);
+		const currentChats = url ? chats[url] || [] : [];
+
 		return (
-			<div className={'flex gap-8'}>
-				{chats.map((chat) => (
-					// TODO: `url` should be replaced by user's input
+			<div className={'flex flex-col gap-8'}>
+				{currentChats.map((chat) => (
 					<ChatCard
 						key={chat.id}
 						url={url || ''}
@@ -107,18 +115,21 @@ const Main = (props: {
 			}
 		};
 
-		if (input != '') {
+		if (input != '' && currentUrl) {
 			setInput('');
 			setIsLoading(true);
 			const output = await fetchResponse(input);
-			setChats((prevChats) => [
+			setChats((prevChats) => ({
 				...prevChats,
-				{
-					id: Date.now().toString(),
-					input: input,
-					output: output,
-				},
-			]);
+				[currentUrl]: [
+					...(prevChats[currentUrl] || []),
+					{
+						id: Date.now().toString(),
+						input: input,
+						output: output,
+					},
+				],
+			}));
 			setIsLoading(false);
 		} else {
 			alert('Please enter a valid URL');
@@ -152,7 +163,7 @@ const Main = (props: {
 					</mdui-segmented-button-group>
 				</div>
 				<div className={'p-4 chats-anchor'}>
-					<ChatsWrapper chats={chats} url={props.url} />
+					<ChatsWrapper chats={chats} url={currentUrl} />
 				</div>
 			</mdui-layout-main>
 
