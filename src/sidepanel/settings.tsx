@@ -2,12 +2,18 @@
 import React, {useEffect, useState} from 'react';
 import './settings.css';
 
+const jsonData = {
+	message: "Hello, this is a test message!",
+	author: "ChatGPT",
+	timestamp: "2024-09-11T10:00:00Z"
+};
 const SettingsPage: React.FC = () => {
 	const [apiKey, setApiKey] = React.useState('');
 	const [language, setLanguage] = React.useState('en');
 	const [threshold, setThreshold] = React.useState(0.5);
 	const [purpose, setPurpose] = React.useState('');
 	const [currentUrl, setCurrentUrl] = useState('');
+	const [isReading, setIsReading] = useState(false); //
 
 	useEffect(() => {
 		// 获取当前页面的 URL
@@ -15,9 +21,24 @@ const SettingsPage: React.FC = () => {
 		setCurrentUrl(url);
 	}, []);
 
+	const readText = (text: string) => {
+		const speech = new SpeechSynthesisUtterance(text);
+		speech.lang = 'en-US'; // 可以根据需要设置语言
+		speech.pitch = 1;      // 设置音调
+		speech.rate = 1;       // 设置语速
+		window.speechSynthesis.speak(speech);
+	};
+
+
 	const handleConfirm = () => {
 		// Handle confirm action
 		console.log('Settings confirmed:', { apiKey, language, threshold, purpose });
+		if (!isReading) {
+			const textToRead = jsonData.message; // 从 JSON 数据中提取需要朗读的文本
+			setIsReading(true); // 防止重复点击
+			readText(textToRead);
+			setIsReading(false); // 朗读完成后重置状态
+		}
 	};
 
 	const handleCancel = () => {

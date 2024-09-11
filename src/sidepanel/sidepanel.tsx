@@ -53,7 +53,7 @@ const Sidepanel: React.FC = () => {
 			{showSettings ? (
 				<SettingsPage />
 			) : (
-				<Main url={url} isLoading={isLoading} initResponse={initResponse} />
+				<Main />
 			)}
 		</mdui-layout>
 	);
