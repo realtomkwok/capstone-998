@@ -1,5 +1,5 @@
 // src/pages/settings.tsx
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import './settings.css';
 
 const SettingsPage: React.FC = () => {
@@ -7,6 +7,13 @@ const SettingsPage: React.FC = () => {
 	const [language, setLanguage] = React.useState('en');
 	const [threshold, setThreshold] = React.useState(0.5);
 	const [purpose, setPurpose] = React.useState('');
+	const [currentUrl, setCurrentUrl] = useState('');
+
+	useEffect(() => {
+		// 获取当前页面的 URL
+		const url = window.location.href;
+		setCurrentUrl(url);
+	}, []);
 
 	const handleConfirm = () => {
 		// Handle confirm action
@@ -61,6 +68,15 @@ const SettingsPage: React.FC = () => {
 			<div className="buttons">
 				<button type="button" id="confirmButton" onClick={handleConfirm}>Confirm</button>
 				<button type="button" id="cancelButton" onClick={handleCancel} className="cancel">Cancel</button>
+			</div>
+			<div>
+				<label>Current Page URL:</label>
+				<input
+					type="text"
+					value={currentUrl}
+					readOnly
+					className="url-input"
+				/>
 			</div>
 		</div>
 	);
