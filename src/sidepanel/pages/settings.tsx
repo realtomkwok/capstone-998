@@ -1,6 +1,11 @@
 // src/pages/settings.tsx
+// TODO: 1. Refactor the SettingPage with options to change the LLM provider, speech language, and speed.
+//       2. Move the readText function to `helper.ts` and import it here.
+
+
 import React, {useEffect, useState} from 'react';
-import './settings.css';
+import {readText} from '@lib/helper';
+import '../settings.css';
 
 const jsonData = {
 	message: "Hello, this is a test message!",
@@ -20,15 +25,6 @@ const SettingsPage: React.FC = () => {
 		const url = window.location.href;
 		setCurrentUrl(url);
 	}, []);
-
-	const readText = (text: string) => {
-		const speech = new SpeechSynthesisUtterance(text);
-		speech.lang = 'en-US'; // 可以根据需要设置语言
-		speech.pitch = 1;      // 设置音调
-		speech.rate = 1;       // 设置语速
-		window.speechSynthesis.speak(speech);
-	};
-
 
 	const handleConfirm = () => {
 		// Handle confirm action

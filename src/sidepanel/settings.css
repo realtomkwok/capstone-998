@@ -1,3 +1,5 @@
+/*TODO: This CSS file may break the UI and needs to be converted to Tailwind CSS in `settings`*/
+
 /* Ensure we are using the same font-family as specified in HTML */
 body {
 	font-family: 'Public Sans', sans-serif;

@@ -8,9 +8,10 @@ import './sidepanel.css';
 // Import pages
 import { LLMResponse } from "@lib/interface"
 import Main from "./pages/main";
-import SettingsPage from './settings';
+import SettingsPage from './pages/settings';
 
 const Sidepanel: React.FC = () => {
+	// TODO: set up state for chats
 	const [url, setUrl] = React.useState<string | undefined>(undefined);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [initResponse, setInitResponse] = useState<LLMResponse | undefined>(undefined);

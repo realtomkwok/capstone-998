@@ -256,11 +256,30 @@ export async function startLLM(
     }
 }
 
+// TODO: Implement the following-up context function
 // export async function getAnswerFromLLM(input: string, provider: LLMProvider) {
 //     const urlPattern = new RegExp(
 //         "^(https?|ftp)://[a-zA-Z0-9-.]+.[a-zA-Z]{2,}(:[0-9]{2,})?(/.*)?$",
 //     )
 // }
+
+/**
+ * Reads out the given text using the browser's speech synthesis API.
+ * @param text The text to read
+ * @param language The language to use for speech synthesis
+ * @param pitch The pitch of the voice
+ * @param rate The rate of speech
+ * TODO: Try another TTS engine if the browser's API is not available
+ */
+
+export function readText(text: string, language: string = "en-US", pitch: number = 1, rate: number = 1) {
+    const speech = new SpeechSynthesisUtterance(text)
+    speech.lang = language  // Set the language as needed
+    speech.pitch = pitch    // Set the pitch
+    speech.rate = rate      // Set the rate
+    window.speechSynthesis.speak(speech)
+}
+
 
 export function downloadResponse(
     content: string,
