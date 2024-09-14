@@ -137,57 +137,33 @@ const Main = () => {
 	}
 
 	return (
-		<>
 			<mdui-layout-main>
 				<div className="m-4">
-					<mdui-segmented-button-group
-						id="segmented-button-group"
-						full-width
-						selects="single"
-						value="openai"
-					>
-						<mdui-segmented-button
-							onClick={() => setLlmProvider('openai')}
-							value="openai"
-							className="controls-border"
-						>
-							OpenAI
-						</mdui-segmented-button>
-						<mdui-segmented-button
-							onClick={() => setLlmProvider('anthropic')}
-							value="anthropic"
-							className="controls-border"
-						>
-							Anthropic
-						</mdui-segmented-button>
-					</mdui-segmented-button-group>
 				</div>
 				<div className={'p-4 chats-anchor'}>
 					<ChatsWrapper chats={chats} url={currentUrl} />
 				</div>
+				{/*<mdui-bottom-app-bar*/}
+				{/*	fab-detach*/}
+				{/*	scroll-behavior="hide"*/}
+				{/*	scroll-threshold={10}*/}
+				{/*>*/}
+				{/*	<input*/}
+				{/*		type={'text'}*/}
+				{/*		placeholder={'Type an URL here...'}*/}
+				{/*		className={*/}
+				{/*			' flex-auto text-body-medium text-on-surface-variant'*/}
+				{/*		}*/}
+				{/*		value={input}*/}
+				{/*		onChange={(e) => setInput(e.target.value)}*/}
+				{/*	/>*/}
+				{/*	<div className={'flex-grow'} />*/}
+				{/*	<mdui-fab*/}
+				{/*		icon="send"*/}
+				{/*		onClick={() => sendChat(input)}*/}
+				{/*	></mdui-fab>*/}
+				{/*</mdui-bottom-app-bar>*/}
 			</mdui-layout-main>
-
-			<mdui-bottom-app-bar
-				fab-detach
-				scroll-behavior="hide"
-				scroll-threshold={10}
-			>
-				<input
-					type={'text'}
-					placeholder={'Type an URL here...'}
-					className={
-						' flex-auto text-body-medium text-on-surface-variant'
-					}
-					value={input}
-					onChange={(e) => setInput(e.target.value)}
-				/>
-				<div className={'flex-grow'} />
-				<mdui-fab
-					icon="send"
-					onClick={() => sendChat(input)}
-				></mdui-fab>
-			</mdui-bottom-app-bar>
-		</>
-	);
+			);
 };
 export default Main

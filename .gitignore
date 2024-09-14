@@ -17,8 +17,9 @@ npm-debug.log*
 # packed files
 /release
 
-# local env files
+# local files
 .env
 .env.development
 .vscode/
 .idea/
+.log

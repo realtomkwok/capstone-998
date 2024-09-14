@@ -50,3 +50,18 @@ export interface MsgBackgroundToSidepanel {
 	url?: string;
 	response?: LLMResponse;
 }
+
+export interface FontVariationSettings {
+	'FILL': 1 | 0;
+	'wght': 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
+	'GRAD': -25 | 0 | 200;
+	'opsz': 20 | 24 | 40 | 48;
+}
+
+export interface MaterialSymbolProps {
+	symbol: string;
+	fill: boolean
+	weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
+	grade: -25 | 0 | 200;
+	opticalSize: 20 | 24 | 40 | 48;
+}
