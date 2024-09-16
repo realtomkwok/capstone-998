@@ -22,4 +22,6 @@ npm-debug.log*
 .env.development
 .vscode/
 .idea/
-.log
+
+# logs
+/logs

@@ -32,6 +32,9 @@ async function handleTabChange(tab) {
 			return;
 		}
 
+		// Update lastProcessedUrl
+		lastProcessedUrl = tab.url;
+
 		await chrome.runtime.sendMessage({
 			type: 'UPDATE_URL',
 			url: tab.url,
@@ -52,6 +55,7 @@ async function handleTabChange(tab) {
 		} else {
 			console.log('Invalid URL:', tab.url);
 		}
+
 	} catch (error) {
 		console.error('Error in handleTabChange:', error);
 	}
@@ -59,10 +63,8 @@ async function handleTabChange(tab) {
 
 
 // New listener for tab updates
-chrome.tabs.onUpdated.addListener(() => {
-	chrome.tabs.query({ active: true, currentWindow: true }, async ([tab]) => {
-		if (tab && tab.url) {
-			await handleTabChange(tab);
-		}
-	});
+chrome.tabs.onUpdated.addListener((changeInfo, tab) => {
+	if (changeInfo.url) {
+		handleTabChange(tab);
+	}
 });
