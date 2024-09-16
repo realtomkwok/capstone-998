@@ -1,103 +1,276 @@
-// // src/pages/settings.tsx
-// // TODO: 1. Refactor the SettingPage with options to change the LLM provider, speech language, and speed.
-// //       2. Move the readText function to `helper.ts` and import it here.
-//
-//
-// import React, {useEffect, useState} from 'react';
-// import {readText} from '@lib/helper';
-// import '../settings.css';
-//
-// // const jsonData = {
-// // 	message: "Hello, this is a test message!",
-// // 	author: "ChatGPT",
-// // 	timestamp: "2024-09-11T10:00:00Z"
-// // };
-//
-// const SettingsPage: React.FC = () => {
-// 	const [apiKey, setApiKey] = React.useState<string | undefined>(undefined);
-// 	const [llmProvider, setLlmProvider] = React.useState('openai');
-// 	const [threshold, setThreshold] = React.useState(0.5);
-// 	const [purpose, setPurpose] = React.useState('');
-// 	const [currentUrl, setCurrentUrl] = useState('');
-// 	const [isReading, setIsReading] = useState(false); //
-//
-// 	useEffect(() => {
-// 		// 获取当前页面的 URL
-// 		const url = window.location.href;
-// 		setCurrentUrl(url);
-// 	}, []);
-//
-// 	const handleConfirm = () => {
-// 		// Handle confirm action
-// 		console.log('Settings confirmed:', { apiKey, language, threshold, purpose });
-// 		if (!isReading) {
-// 			const textToRead = jsonData.message; // 从 JSON 数据中提取需要朗读的文本
-// 			setIsReading(true); // 防止重复点击
-// 			readText(textToRead);
-// 			setIsReading(false); // 朗读完成后重置状态
-// 		}
-// 	};
-//
-// 	const handleCancel = () => {
-// 		// Handle cancel action
-// 		console.log('Settings canceled');
-// 	};
-//
-// 	return (
-// 		<div id="settings" className="settings">
-// 			<h1>Settings</h1>
-// 			<label htmlFor="apiKey">Token:</label>
-// 			<input
-// 				type="text"
-// 				id="apiKey"
-// 				name="apiKey"
-// 				value={apiKey}
-// 				onChange={(e) => setApiKey(e.target.value)}
-// 			/>
-// 			<label htmlFor="language">Language:</label>
-// 			<select
-// 				id="language"
-// 				name="language"
-// 				value={language}
-// 				onChange={(e) => setLanguage(e.target.value)}
-// 			>
-// 				<option value="cn">Chinese</option>
-// 				<option value="en">English</option>
-// 			</select>
-// 			<label htmlFor="threshold">Speed:</label>
-// 			<input
-// 				type="range"
-// 				id="threshold"
-// 				name="threshold"
-// 				min="0"
-// 				max="1"
-// 				step="0.1"
-// 				value={threshold}
-// 				onChange={(e) => setThreshold(parseFloat(e.target.value))}
-// 			/>
-// 			<label htmlFor="purpose">Purpose:</label>
-// 			<input
-// 				type="text"
-// 				id="purpose"
-// 				name="purpose"
-// 				value={purpose}
-// 				onChange={(e) => setPurpose(e.target.value)}
-// 			/>
-// 			<div className="buttons">
-// 				<button type="button" id="confirmButton" onClick={handleConfirm}>Confirm</button>
-// 				<button type="button" id="cancelButton" onClick={handleCancel} className="cancel">Cancel</button>
-// 			</div>
-// 			<div>
-// 				<label>Current Page URL:</label>
-// 				<input
-// 					type="text"
-// 					value={currentUrl}
-// 					readOnly
-// 					className="url-input"
-// 				/>
-// 			</div>
-// 		</div>
-// 	);
-// };
-//
-// export default SettingsPage;
+// src/pages/settings.tsx
+
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { NavigationDrawer } from 'mdui';
+import { validateApiKey } from '@components/validate-apiKey';
+import { LLMProvider, SpeechLanguage } from '@lib/interface';
+
+/**
+ * Settings Modal Component
+ * @param isOpen - 检查是否打开`SettingsModal`
+ * @param onClose - 关闭`SettingsModal`
+ * @returns - `SettingsModal`组件
+ */
+
+export const SettingsModal: React.FC<{
+	isOpen: boolean;
+	onClose: () => void;
+}> = ({ isOpen, onClose }) => {
+	const settingsModalRef = useRef<NavigationDrawer>(null); // Get the settings modal ref
+
+	const [llmProvider, setLlmProvider] = useState<LLMProvider>('openai');
+
+	const [apiKey, setApiKey] = useState<string>('');
+    
+    const handleTestApiKey = async () => {
+        const result = await validateApiKey(apiKey, llmProvider)
+        
+        if (result) {
+            const textfield = document.querySelector('mdui-text-field');
+            if (textfield) {
+                textfield.setCustomValidity(result.msg)
+            }
+        }
+    }
+
+	const [speechLanguage, setSpeechLanguage] =
+		useState<SpeechLanguage>('en-US');
+	const [speechRate, setSpeechRate] = useState<number>(1);
+
+	const [speechVoice, setSpeechVoice] = useState<SpeechSynthesisVoice | null>(
+		null
+	);
+
+	const speechVoices: SpeechSynthesisVoice[] = speechSynthesis.getVoices(); // Get all voices
+	const localVoices: SpeechSynthesisVoice[] = speechVoices.filter(
+		(voice) => voice.lang === speechLanguage
+	);
+
+	useEffect(() => {
+		setSpeechVoice(localVoices[0]);
+	}, [speechLanguage]);
+
+	function getProviderName(provider: string) {
+		switch (provider) {
+			case 'openai':
+				return 'OpenAI';
+			case 'anthropic':
+				return 'Anthropic';
+			default:
+				return 'Unknown';
+		}
+	}
+
+	function getLanguageName(language: string) {
+		switch (language) {
+			case 'en-US':
+				return 'English (US)';
+			case 'zh-CN':
+				return 'Chinese (Mandarin)';
+			default:
+				return 'Unknown';
+		}
+	}
+
+	const [isPlaying, setIsPlaying] = useState<boolean>(false);
+
+	function playGreeting() {
+		if (!speechVoice) return;
+
+		const greeting = (language: string) => {
+			switch (language) {
+				case 'en-US':
+					return 'Hi, I am Clara. I can help you see the web.';
+				case 'zh-CN':
+					return '嗨，我是 Clara。我可以帮助你浏览网页更轻松。';
+				default:
+					return "Hi I'm Clara.";
+			}
+		};
+
+		const utterance = new SpeechSynthesisUtterance(
+			greeting(speechLanguage)
+		);
+		utterance.lang = speechLanguage;
+		utterance.rate = speechRate;
+		utterance.voice = speechVoice;
+		utterance.onend = () => setIsPlaying(false);
+
+		speechSynthesis.speak(utterance);
+	}
+
+	function handlePlayGreeting() {
+		if (isPlaying) {
+			setIsPlaying(false);
+			speechSynthesis.cancel();
+		} else {
+			setIsPlaying(true);
+			playGreeting();
+		}
+	}
+
+	useEffect(() => {
+		if (settingsModalRef.current) {
+			// Control the 'open' property of the navigation drawer based on 'isOpen' state
+			settingsModalRef.current.open = isOpen;
+		}
+	}, [isOpen]);
+
+	console.log(speechRate);
+
+	return (
+		<mdui-navigation-drawer
+			ref={settingsModalRef}
+			placement="right"
+			close-on-esc
+			close-on-overlay-click
+			order={1}
+		>
+			<div className="flex flex-col p-4">
+				<div className="flex flex-row items-center">
+					<div className="typo-title-large self-center">Settings</div>
+					<div className="flex-grow"></div>
+					<mdui-button-icon
+						icon="close"
+						onClick={onClose}
+						variant="tonal"
+					></mdui-button-icon>
+				</div>
+			</div>
+			<mdui-list>
+				<mdui-list-subheader>LLM Providers</mdui-list-subheader>
+				<div className="flex flex-col gap-6 px-4">
+					<mdui-segmented-button-group
+						className="border-outline"
+						full-width
+						selects="single"
+						value={llmProvider}
+						onChange={(e: ChangeEvent<HTMLInputElement>) =>
+							setLlmProvider(
+								e.target.value as 'openai' | 'anthropic'
+							)
+						}
+					>
+						<mdui-segmented-button
+							className="border-outline border"
+							onClick={() => setLlmProvider('openai')}
+							value="openai"
+						>
+							OpenAI
+						</mdui-segmented-button>
+						<mdui-segmented-button
+							className="border-outline border"
+							onClick={() => setLlmProvider('anthropic')}
+							value="anthropic"
+						>
+							Anthropic
+						</mdui-segmented-button>
+					</mdui-segmented-button-group>
+					<mdui-text-field
+						variant="outlined"
+						type="password"
+						label="API Key"
+						icon="key"
+						toggle-password
+						placeholder="sk-..."
+						helper={`Enter your ${getProviderName(
+							llmProvider
+						)} API Key.`}
+						helper-on-focus
+						onChange={(e: ChangeEvent<HTMLInputElement>) =>
+							setApiKey(e.target.value)
+						}
+					/>
+					<mdui-button
+						variant="outlined"
+						onClick={handleTestApiKey}
+					>
+						Test API Key
+					</mdui-button>
+				</div>
+
+				<mdui-list-subheader>Speech</mdui-list-subheader>
+				<mdui-dropdown placement="bottom-start">
+					<mdui-list-item
+						slot="trigger"
+						icon="language"
+						end-icon="arrow_drop_down"
+						title="Language"
+						headline="Language"
+						description={getLanguageName(speechLanguage)}
+					/>
+					<mdui-menu style={{ transform: 'translateX(4em)' }}>
+						{['en-US', 'zh-CN'].map((language) => (
+							<mdui-menu-item
+								key={language}
+								value={language}
+								selected-icon="check"
+								onClick={() =>
+									setSpeechLanguage(
+										language as SpeechLanguage
+									)
+								}
+							>
+								{getLanguageName(language)}
+							</mdui-menu-item>
+						))}
+					</mdui-menu>
+				</mdui-dropdown>
+				<mdui-dropdown placement="bottom-start">
+					<mdui-list-item
+						slot="trigger"
+						icon="record_voice_over"
+						end-icon="arrow_drop_down"
+						title="Voice"
+						headline="Voice"
+						description={speechVoice?.name || ''}
+					/>
+					<mdui-menu
+						style={{
+							transform: 'translateX(4em)',
+							maxHeight: '20em',
+							overflowY: 'auto',
+						}}
+					>
+						{speechVoices
+							.filter((voice) => voice.lang === speechLanguage)
+							.map((voice) => (
+								<mdui-menu-item
+									key={voice.name}
+									value={`${voice.name}_${voice.lang}`}
+									selected-icon="check"
+									onClick={() => setSpeechVoice(voice)}
+								>
+									{voice.name}
+								</mdui-menu-item>
+							))}
+					</mdui-menu>
+				</mdui-dropdown>
+				<mdui-list-item
+					nonclickable
+					headline="Speech Rate"
+					icon="speed"
+				></mdui-list-item>
+				<mdui-slider
+					tickmarks
+					value={speechRate}
+					onInput={(e: ChangeEvent<HTMLInputElement>) =>
+						setSpeechRate(parseFloat(e.target.value))
+					}
+					step={0.25}
+					min={0.5}
+					max={1.5}
+				/>
+			</mdui-list>
+			<div className="flex flex-row p-4">
+				<mdui-button
+					icon={isPlaying ? 'pause' : 'play_arrow'}
+					variant={isPlaying ? 'tonal' : 'outlined'}
+					onClick={handlePlayGreeting}
+				>
+					{isPlaying ? 'Pause' : 'Play'}
+				</mdui-button>
+			</div>
+		</mdui-navigation-drawer>
+	);
+};

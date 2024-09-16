@@ -65,3 +65,5 @@ export interface MaterialSymbolProps {
 	grade: -25 | 0 | 200;
 	opticalSize: 20 | 24 | 40 | 48;
 }
+
+export type SpeechLanguage = 'en-US' | 'zh-CN' 

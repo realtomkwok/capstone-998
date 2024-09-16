@@ -3,7 +3,7 @@ import {
     RecursiveCharacterTextSplitter,
 } from "@langchain/textsplitters"
 import { Document } from "@langchain/core/documents"
-import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai"
+import { ChatOpenAI, OpenAI, OpenAIEmbeddings } from "@langchain/openai"
 import { ChatAnthropic } from "@langchain/anthropic"
 import { MemoryVectorStore } from "langchain/vectorstores/memory"
 import FirecrawlApp, { ScrapeResponse } from "@mendable/firecrawl-js"
@@ -215,6 +215,7 @@ export async function startLLM(
     chunkOverlap: number = 200,
 ): Promise<LLMResponse> {
     try {
+        // Play a sound to indicate that the LLM process has started
         console.log(`Starting LLM process for URL: ${url}`)
         
         // Load the page
@@ -253,6 +254,8 @@ export async function startLLM(
     } catch (error) {
         console.error("Error in startLLMProcess:", error)
         throw new Error(`Failed to process LLM request: ${error}`)
+    } finally {
+        new Audio('/sounds/cheers.wav').play()
     }
 }
 
@@ -272,11 +275,12 @@ export async function startLLM(
  * TODO: Try another TTS engine if the browser's API is not available
  */
 
-export function readText(text: string, language: string = "en-US", pitch: number = 1, rate: number = 1) {
+export function readText(text: string, language: string = "en-US", pitch: number = 1, rate: number = 1, speechVoice: SpeechSynthesisVoice) {
     const speech = new SpeechSynthesisUtterance(text)
     speech.lang = language  // Set the language as needed
     speech.pitch = pitch    // Set the pitch
     speech.rate = rate      // Set the rate
+    speech.voice = speechVoice
     window.speechSynthesis.speak(speech)
 }
 
