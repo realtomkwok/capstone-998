@@ -5,7 +5,6 @@ import 'mdui/mdui.css';
 
 import {
 	LLMChat,
-	LLMProvider,
 	LLMResponse,
 	MsgBackgroundToSidepanel,
 } from '@lib/interface';
@@ -100,7 +99,7 @@ const Main = () => {
 					</div>
 					<div className={'flex flex-row gap-2 justify-end'}>
 						<mdui-button-icon icon="download" onClick={() => {
-							downloadResponse(JSON.stringify(props.output), 'response.json', 'application/json');
+							downloadResponse(JSON.stringify(props.output), `llm-response_${currentUrl}_${Date.now()}.json`, 'application/json');
 						}}></mdui-button-icon>
 						<mdui-button-icon icon="volume_up" onClick={() => {
 								handleReadResponse(props.output.answer || RESPONSES.noAnswerFound.message);
