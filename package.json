@@ -59,7 +59,7 @@
 		"html-to-text": "^9.0.5",
 		"jsdom": "^24.1.1",
 		"langchain": "^0.2.16",
-		"langsmith": "^0.1.41",
+		"langsmith": "^0.1.55",
 		"mdui": "^2.1.2",
 		"node-polyfill-webpack-plugin": "^4.0.0",
 		"os-browserify": "^0.3.0",
