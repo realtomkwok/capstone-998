@@ -1,7 +1,7 @@
 // src/pages/settings.tsx
 
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
-import { NavigationDrawer } from 'mdui';
+import { NavigationDrawer, TextField } from 'mdui';
 import { validateApiKey } from '@components/validate-apiKey';
 import { LLMProvider, SpeechLanguage } from '@lib/interface';
 
@@ -16,11 +16,13 @@ export const SettingsModal: React.FC<{
 	isOpen: boolean;
 	onClose: () => void;
 }> = ({ isOpen, onClose }) => {
-	const settingsModalRef = useRef<NavigationDrawer>(null); // Get the settings modal ref
+    const settingsModalRef = useRef<NavigationDrawer>(null);
 
 	const [llmProvider, setLlmProvider] = useState<LLMProvider>('openai');
 
-	const [apiKey, setApiKey] = useState<string>('');
+    const [apiKey, setApiKey] = useState<string>('');
+    const [isValidatingApiKey, setIsValidatingApiKey] = useState<boolean>(false);
+    const [isTypingApiKey, setIsTypingApiKey] = useState<boolean>(false);
     
     const handleTestApiKey = async () => {
         const result = await validateApiKey(apiKey, llmProvider)
@@ -116,8 +118,6 @@ export const SettingsModal: React.FC<{
 		}
 	}, [isOpen]);
 
-	console.log(speechRate);
-
 	return (
 		<mdui-navigation-drawer
 			ref={settingsModalRef}
@@ -166,32 +166,42 @@ export const SettingsModal: React.FC<{
 							Anthropic
 						</mdui-segmented-button>
 					</mdui-segmented-button-group>
-					<mdui-text-field
-						variant="outlined"
-						type="password"
-						label="API Key"
-						icon="key"
-						toggle-password
-						placeholder="sk-..."
-						helper={`Enter your ${getProviderName(
-							llmProvider
-						)} API Key.`}
-						helper-on-focus
-						onChange={(e: ChangeEvent<HTMLInputElement>) =>
-							setApiKey(e.target.value)
-						}
-					/>
-					<mdui-button
-						variant="outlined"
-						onClick={handleTestApiKey}
-					>
-						Test API Key
-					</mdui-button>
+					<div className="flex flex-col gap-2">
+						<mdui-text-field
+							variant="outlined"
+							type="password"
+							label="API Key"
+							icon="key"
+							toggle-password-button
+							placeholder="sk-..."
+							helper={`Enter your ${getProviderName(
+								llmProvider
+							)} API Key.`}
+							// helper-on-focus
+							onChange={(e: ChangeEvent<HTMLInputElement>) =>
+								setApiKey(e.target.value)
+							}
+							onFocus={() => setIsTypingApiKey(true)}
+							onBlur={() => setIsTypingApiKey(false)}
+						/>
+						{isTypingApiKey && (
+							<mdui-button
+								style={{
+									display: isTypingApiKey ? 'block' : 'none',
+								}}
+								variant="tonal"
+								onClick={handleTestApiKey}
+							>
+								Test API Key
+							</mdui-button>
+						)}
+					</div>
 				</div>
 
 				<mdui-list-subheader>Speech</mdui-list-subheader>
 				<mdui-dropdown placement="bottom-start">
 					<mdui-list-item
+						rounded
 						slot="trigger"
 						icon="language"
 						end-icon="arrow_drop_down"
@@ -217,7 +227,8 @@ export const SettingsModal: React.FC<{
 					</mdui-menu>
 				</mdui-dropdown>
 				<mdui-dropdown placement="bottom-start">
-					<mdui-list-item
+                    <mdui-list-item
+                        rounded
 						slot="trigger"
 						icon="record_voice_over"
 						end-icon="arrow_drop_down"
@@ -246,11 +257,7 @@ export const SettingsModal: React.FC<{
 							))}
 					</mdui-menu>
 				</mdui-dropdown>
-				<mdui-list-item
-					nonclickable
-					headline="Speech Rate"
-					icon="speed"
-				></mdui-list-item>
+				<mdui-list-item nonclickable rounded headline='Speed' description={`${speechRate}x`} icon='speed' />
 				<mdui-slider
 					tickmarks
 					value={speechRate}
@@ -265,7 +272,7 @@ export const SettingsModal: React.FC<{
 			<div className="flex flex-row p-4">
 				<mdui-button
 					icon={isPlaying ? 'pause' : 'play_arrow'}
-					variant={isPlaying ? 'tonal' : 'outlined'}
+					variant={isPlaying ? 'elevated' : 'tonal'}
 					onClick={handlePlayGreeting}
 				>
 					{isPlaying ? 'Pause' : 'Play'}
