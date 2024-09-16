@@ -13,7 +13,7 @@ import { RunnableSequence } from "@langchain/core/runnables"
 import { ChatPromptTemplate } from "@langchain/core/prompts"
 import { ASSISTANT_MSG, INIT_PROMPT, SYSTEM_MSG, USER_MSG } from "@lib/prompts"
 import { LLMProvider, ScrapePageData, LLMResponse } from "@lib/interface"
-import { OUTPUT_SCHEMES } from "./responses"
+import { OUTPUT_SCHEMES } from "./response-format"
 
 /**
  * Loads and scrapes the content of a given URL using FirecrawlApp.
@@ -243,7 +243,7 @@ export async function startLLM(
         console.log("Invoking chain...")
         const response = await chain.invoke({
             context: rawMarkdown,
-            question: INIT_PROMPT,
+            question: '',
             format_instructions: formatInstructions,
         })
         console.log("Chain invoked successfully")
@@ -255,7 +255,10 @@ export async function startLLM(
         console.error("Error in startLLMProcess:", error)
         throw new Error(`Failed to process LLM request: ${error}`)
     } finally {
-        new Audio('/sounds/cheers.wav').play()
+        if (typeof window !== 'undefined' && window.Audio) {
+            new Audio('/public/sounds/cheers.wav').play()
+            .catch(error => console.error('Error playing sound:', error))
+        }
     }
 }
 
@@ -275,10 +278,10 @@ export async function startLLM(
  * TODO: Try another TTS engine if the browser's API is not available
  */
 
-export function readText(text: string, language: string = "en-US", pitch: number = 1, rate: number = 1, speechVoice: SpeechSynthesisVoice) {
+export function readText(text: string, language: string = "en-US", rate: number = 1, speechVoice: SpeechSynthesisVoice) {
     const speech = new SpeechSynthesisUtterance(text)
     speech.lang = language  // Set the language as needed
-    speech.pitch = pitch    // Set the pitch
+    // speech.pitch = pitch    // Set the pitch
     speech.rate = rate      // Set the rate
     speech.voice = speechVoice
     window.speechSynthesis.speak(speech)
@@ -287,8 +290,8 @@ export function readText(text: string, language: string = "en-US", pitch: number
 
 export function downloadResponse(
     content: string,
-    fileName: string    = "json.txt",
-    contentType: string = "text/plain",
+    fileName: string,
+    contentType: string
 ) {
     let a = document.createElement("a")
     let file = new Blob([content], { type: contentType })

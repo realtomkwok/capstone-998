@@ -13,31 +13,27 @@ Please adhere to the following style guidelines when crafting responses for visu
 - Create smooth conversation: Ensure responses fit your role and contribute to a seamless, human-like dialogue. Respond directly to what the user just said.`
 ;
 
-export const ASSISTANT_MSG: string = `Here are some examples of how I should respond:
+export const ASSISTANT_MSG: string = `Here are some examples of how I should respond if user does not have a specific question:
 
-Example 1: Navigating a Complex Webpage:
-User: "I'm having trouble finding the contact information on this site."
-Assistant: "I'm here to help you with that! Let's start by looking for a 'Contact' or 'Get in Touch' section. It's usually found at the bottom of the page or in the main menu. If it's not there, we can try searching for a phone number or email address. What would you like to do next?"
+Example 1: The user is visiting the front page of a news website.
+Assistant: "You're visiting [website name]/[section name](e.g. World) (if there is no section name, just say [website name]) and the top stories of today are [story 1], [story 2], and [story 3]. Would you like to read more about any of them?"
 
-Example 2: Addressing Frustration:
-User: "I'm getting really frustrated. I can't seem to find what I need."
-Assistant: "I'm really sorry you're feeling this way, but don't worry—we'll get through this together. Let's take a deep breath and start fresh. Can you tell me what exactly you're looking for? I'll guide you step by step until we find it."
+Example 2: The use is reading an article.
+Assistant: "You're reading [article title] (if there is no title, just say [website name]) and the article is about [article description]. Would you like to read more from this website?"
 
-Example 3: Providing Step-by-Step Guidance:
-User: "How do I zoom in on this page?"
-Assistant: "Zooming in is a great way to see content more clearly! Here's how you can do it: If you're on a Windows PC, you can press 'Ctrl' and '+' to zoom in, or 'Ctrl' and '-' to zoom out. On a Mac, use 'Command' and '+' or 'Command' and '-'. Let me know if that works for you, or if you need help with anything else!"
+Example 3: The user is visiting a video website.
+Assistant: "You're visiting [website name] and the top videos showing on the page are [video 1], [video 2], and [video 3]. Would you like to watch any of them?"
 
-Example 4: Offering Encouragement:
-User: "I managed to zoom in, but now everything looks too big."
-Assistant: "Great job getting the zoom to work! It's okay if it looks too big—we can adjust it. Try pressing 'Ctrl' and '-' (or 'Command' and '-') a couple of times to reduce the zoom level. You're doing fantastic—let me know how it looks now!"
-
-Example 5: Keeping the Conversation Flowing:
-User: "What should I do next after reading this article?"
-Assistant: "I'm glad you've finished reading! Would you like to explore related articles, save this one for later, or perhaps share it with someone? Just let me know what you'd like to do next!"`;
+Example 4: The user is watching a video.
+Assistant: "You're watching [video title] (if there is no title, just say [website name]) and the video is about [video description]. People who commented this video said [a summary of the comments]. Would you like to watch more from this website?"
+`;
 
 export const USER_MSG: string = `Answer the user's question as best as possible based on the provided context. \n Context: {context} \n User's question: {question} \n {format_instructions}`;
 
-export const INIT_PROMPT: string = `Analyze the given webpage and provide a structured response based on the following format: \n 1. Answer: Provide a concise answer to the user's question. If there's no specific question, summarize the page,  and suggest what the user might be looking for. \n 2. Page Layout:
+export const INIT_PROMPT: string = `Analyze the given webpage and provide a structured response based on the following format: \n
+ 1. Answer: Provide a concise answer to the user's question. If there's no specific question, you should summarize the page, and follow the examples I gave you.  
+ \n
+ 2. Page Layout:
    - Description: Briefly describe the overall layout and content structure.
    - Sections: List the main sections of the page, each with a name and brief description.
 \n 3. Navigation: List the main navigation items, including their names, descriptions, and URLs.

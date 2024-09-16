@@ -1,86 +1,16 @@
-import z from 'zod';
-
-export const OUTPUT_SCHEMES = (websiteType: 'news' | 'general') => {
-	const pageLayout = z.object({
-		description: z
-			.string()
-			.describe(
-				'A concise description of the page layout and content structure'
-			),
-		sections: z
-			.array(
-				z.object({
-					name: z
-						.string()
-						.describe('The title or headline of the section'),
-					description: z
-						.string()
-						.describe(
-							'A brief description of the content within the section'
-						),
-				})
-			)
-			.describe(
-				'An array of sections within the page, each with a name and description'
-			),
-	});
-
-	const navigation = z
-		.array(
-			z.object({
-				name: z
-					.string()
-					.describe(
-						'The title or headline of the navigation section'
-					),
-				description: z
-					.string()
-					.describe(
-						'A brief description of the content within the navigation section'
-					),
-				url: z.string().describe('The URL of the navigation item'),
-			})
-		)
-		.describe(
-			'An array of navigation items within the page, each with a name, description, and URL'
-		);
-
-	const topStories = z.array(
-		z.object({
-			title: z
-				.string()
-				.describe('A verbal, concise headline of the top story'),
-			ogTitle: z
-				.string()
-				.describe(
-					'The original title of the top story, as it appears on the source website'
-				),
-			description: z
-				.string()
-				.describe('A verbal, concise description of the top story'),
-			url: z.string().describe('The URL of the top story'),
-		})
-	);
-
-	const answer = z
-		.string()
-		.describe(
-			'A verbal, concise answer to the user\'s question. If the user is not asking a question, summarize the page and provide suggestions for what the user might be looking for. \n Example: "You\'re visiting {the title of the website}. It looks like {description of the page layout}. The main content of the page includes {description of the main content}. Would you like me to describe the page in more detail?"'
-		);
-
-	switch (websiteType) {
-		case 'general':
-			return z.object({
-				answer: answer,
-				pageLayout: pageLayout,
-				navigation: navigation,
-			});
-		case 'news':
-			return z.object({
-				answer: answer,
-				pageLayout: pageLayout,
-				navigation: navigation,
-				topStories: topStories,
-			});
-	}
+export const RESPONSES = {
+	couldNotUnderstand: {
+		message:
+			"I couldn't understand the question. Would you like to try again?",
+		sound: '/public/sounds/interstitial-delay-tone.wav',
+	},
+	noAnswerFound: {
+		message:
+			"Sorry, I couldn't find an answer for that. Would you like me to try again?",
+		sound: '/public/sounds/attending-window-end.wav',
+	},
+	success: {
+		message: 'Success',
+		sound: '/public/sounds/cheers.wav',
+	},
 };

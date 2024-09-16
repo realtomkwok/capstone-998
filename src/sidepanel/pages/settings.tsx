@@ -1,7 +1,8 @@
 // src/pages/settings.tsx
 
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import React, { ChangeEvent, useEffect, useContext, useState, useRef } from 'react';
 import { NavigationDrawer, TextField } from 'mdui';
+import { SettingsContext } from '@components/settings-context';
 import { validateApiKey } from '@components/validate-apiKey';
 import { LLMProvider, SpeechLanguage } from '@lib/interface';
 
@@ -16,41 +17,27 @@ export const SettingsModal: React.FC<{
 	isOpen: boolean;
 	onClose: () => void;
 }> = ({ isOpen, onClose }) => {
-    const settingsModalRef = useRef<NavigationDrawer>(null);
+	const settingsModalRef = useRef<NavigationDrawer>(null);
 
-	const [llmProvider, setLlmProvider] = useState<LLMProvider>('openai');
+	const speechVoices = speechSynthesis.getVoices();
 
-    const [apiKey, setApiKey] = useState<string>('');
-    const [isValidatingApiKey, setIsValidatingApiKey] = useState<boolean>(false);
-    const [isTypingApiKey, setIsTypingApiKey] = useState<boolean>(false);
-    
-    const handleTestApiKey = async () => {
-        const result = await validateApiKey(apiKey, llmProvider)
-        
-        if (result) {
-            const textfield = document.querySelector('mdui-text-field');
-            if (textfield) {
-                textfield.setCustomValidity(result.msg)
-            }
-        }
-    }
+	const {
+		llmProvider,
+		setLlmProvider,
+		apiKey,
+		setApiKey,
+		isValidatingApiKey,
+		setIsValidatingApiKey,
+		isTypingApiKey,
+		setIsTypingApiKey,
+		speechLanguage,
+		setSpeechLanguage,
+		speechRate,
+		setSpeechRate,
+		speechVoice,
+		setSpeechVoice,
+	} = useContext(SettingsContext)!;
 
-	const [speechLanguage, setSpeechLanguage] =
-		useState<SpeechLanguage>('en-US');
-	const [speechRate, setSpeechRate] = useState<number>(1);
-
-	const [speechVoice, setSpeechVoice] = useState<SpeechSynthesisVoice | null>(
-		null
-	);
-
-	const speechVoices: SpeechSynthesisVoice[] = speechSynthesis.getVoices(); // Get all voices
-	const localVoices: SpeechSynthesisVoice[] = speechVoices.filter(
-		(voice) => voice.lang === speechLanguage
-	);
-
-	useEffect(() => {
-		setSpeechVoice(localVoices[0]);
-	}, [speechLanguage]);
 
 	function getProviderName(provider: string) {
 		switch (provider) {
@@ -72,6 +59,18 @@ export const SettingsModal: React.FC<{
 			default:
 				return 'Unknown';
 		}
+	}
+
+	function handleTestApiKey() {
+		setIsValidatingApiKey(true);
+		validateApiKey(apiKey, llmProvider).then((isValid) => {
+			setIsValidatingApiKey(false);
+			if (isValid) {
+				alert('API Key is valid.');
+			} else {
+				alert('API Key is invalid.');
+			}
+		});
 	}
 
 	const [isPlaying, setIsPlaying] = useState<boolean>(false);

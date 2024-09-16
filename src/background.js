@@ -42,8 +42,10 @@ async function handleTabChange(tab) {
 			console.log('Error sending UPDATE_URL message:', error);
 		});
 
+		// Check if the URL is valid
 		const urlPattern = new RegExp('^(https?:\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)$');
-
+		
+		// If valid URL, start LLM
 		if (urlPattern.test(tab.url)) {
 			const response = await startLLM(tab.url, 'openai');
 			await chrome.runtime.sendMessage({
@@ -51,13 +53,14 @@ async function handleTabChange(tab) {
 				response: response,
 			}).catch(error => {
 				console.log('Error sending UPDATE_RESPONSE message:', error);
+			}).finally(() => {
+				console.log('LLM completed and response has been sent to sidepanel');
 			});
 		} else {
 			console.log('Invalid URL:', tab.url);
 		}
-
 	} catch (error) {
-		console.error('Error in handleTabChange:', error);
+		console.log(error);
 	}
 }
 
