@@ -8,9 +8,9 @@ import { LLMProvider, SpeechLanguage } from '@lib/interface';
 
 /**
  * Settings Modal Component
- * @param isOpen - 检查是否打开`SettingsModal`
- * @param onClose - 关闭`SettingsModal`
- * @returns - `SettingsModal`组件
+ * @param isOpen - Check if the `SettingsModal` is open
+ * @param onClose - Close`SettingsModal`
+ * @returns - `SettingsModal` component
  */
 
 export const SettingsModal: React.FC<{

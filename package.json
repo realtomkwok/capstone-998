@@ -1,6 +1,6 @@
 {
 	"name": "clara",
-	"version": "0.3.0",
+	"version": "0.4.1",
 	"description": "Clara is a browser extension that helps visually impaired users navigate the web.",
 	"private": true,
 	"scripts": {

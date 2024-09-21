@@ -1,3 +1,5 @@
+import { AriaAttributes, AriaRole } from "react";
+
 export interface LLMResponse {
 	answer: string;
 	pageLayout?: {
@@ -64,6 +66,7 @@ export interface MaterialSymbolProps {
 	weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
 	grade: -25 | 0 | 200;
 	opticalSize: 20 | 24 | 40 | 48;
+	role: AriaRole;
 }
 
 export type SpeechLanguage = 'en-US' | 'zh-CN' 

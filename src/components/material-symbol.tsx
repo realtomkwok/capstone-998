@@ -7,6 +7,7 @@ export const MaterialSymbol: React.FC<MaterialSymbolProps> = ({
 	fill=false,
 	grade,
 	opticalSize,
+	role
 }) => {
 	const fontVariationSettings: FontVariationSettings = {
 		FILL: fill ? 1 : 0,
@@ -17,6 +18,7 @@ export const MaterialSymbol: React.FC<MaterialSymbolProps> = ({
 
 	return (
 		<span
+			role={role}
 			style={{
 				fontVariationSettings: `'FILL' ${fontVariationSettings.FILL}, 'wght' ${fontVariationSettings.wght}, 'GRAD' ${fontVariationSettings.GRAD}, 'opsz' ${fontVariationSettings.opsz}`,
 			}}

@@ -3,84 +3,97 @@
 @tailwind utilities;
 
 @layer components {
-    .typo-title-large {
-        @apply text-title-large font-title-large leading-title-large tracking-title-large;
-    }
+	.typo-title-large {
+		@apply text-title-large font-title-large leading-title-large tracking-title-large;
+	}
 
-    .typo-title-medium {
-        @apply text-title-medium font-title-medium leading-title-medium tracking-title-medium;
-    }
+	.typo-title-medium {
+		@apply text-title-medium font-title-medium leading-title-medium tracking-title-medium;
+	}
 
-    .typo-title-small {
-        @apply text-title-small font-title-small leading-title-small tracking-title-small;
-    }
+	.typo-title-small {
+		@apply text-title-small font-title-small leading-title-small tracking-title-small;
+	}
 
-    .typo-headline-large {
-        @apply text-headline-large font-headline-large leading-headline-large tracking-headline-large;
-    }
+	.typo-headline-large {
+		@apply text-headline-large font-headline-large leading-headline-large tracking-headline-large;
+	}
 
-    .typo-headline-medium {
-        @apply text-headline-medium font-headline-medium leading-headline-medium tracking-headline-medium;
-    }
+	.typo-headline-medium {
+		@apply text-headline-medium font-headline-medium leading-headline-medium tracking-headline-medium;
+	}
 
-    .typo-headline-small {
-        @apply text-headline-small font-headline-small leading-headline-small tracking-headline-small;
-    }
+	.typo-headline-small {
+		@apply text-headline-small font-headline-small leading-headline-small tracking-headline-small;
+	}
 
-    .typo-body-large {
-        @apply text-body-large font-body-large leading-body-large tracking-body-large;
-    }
+	.typo-body-large {
+		@apply text-body-large font-body-large leading-body-large tracking-body-large;
+	}
 
-    .typo-body-medium {
-        @apply text-body-medium font-body-medium leading-body-medium tracking-body-medium;
-    }
+	.typo-body-medium {
+		@apply text-body-medium font-body-medium leading-body-medium tracking-body-medium;
+	}
 
-    .typo-body-small {
-        @apply text-body-small font-body-small leading-body-small tracking-body-small;
-    }
+	.typo-body-small {
+		@apply text-body-small font-body-small leading-body-small tracking-body-small;
+	}
 
-    .typo-label-large {
-        @apply text-label-large font-label-large leading-label-large tracking-label-large;
-    }
+	.typo-label-large {
+		@apply text-label-large font-label-large leading-label-large tracking-label-large;
+	}
 
-    .typo-label-medium {
-        @apply text-label-medium font-label-medium leading-label-medium tracking-label-medium;
-    }
+	.typo-label-medium {
+		@apply text-label-medium font-label-medium leading-label-medium tracking-label-medium;
+	}
 
-    .typo-label-small {
-        @apply text-label-small font-label-small leading-label-small tracking-label-small;
-    }
+	.typo-label-small {
+		@apply text-label-small font-label-small leading-label-small tracking-label-small;
+	}
 
-    .segmented-button {
-        @apply border-[0.625rem] border-outline
-    }
+	.segmented-button {
+		@apply border-[0.625rem] border-outline;
+	}
 }
 
-html, body, #app, #app > div {
-    height: 100%;
+html,
+body,
+#app,
+#app > div {
+	height: 100%;
 }
 
 body {
-    margin: 0;
+	margin: 0;
 }
 
 input {
-    -webkit-appearance: none;
-    all: unset;
+	-webkit-appearance: none;
+	all: unset;
 }
 
 .panel {
-    max-width: 90%;
+	max-width: 90%;
 }
 
- .material-symbols-rounded {
-     font-variation-settings:
-             'FILL' 1,
-             'wght' 400,
-             'GRAD' 0,
-             'opsz' 24
- }
+.material-symbols-rounded {
+	font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
 
- .mdui-segmented-button-first, .mdui-segmented-button-last {
-     border: 1px solid rgb(var(--mdui-color-outline));
- }
+.mdui-segmented-button-first,
+.mdui-segmented-button-last {
+	border: 1px solid rgb(var(--mdui-color-outline));
+}
+
+/* For screen readers */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}

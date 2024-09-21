@@ -76,33 +76,37 @@ const Main = () => {
 	}
 
 	// Create a new chat card
-	const ChatCard = (props: {
+	const ChatCard: React.FC<React.HTMLAttributes<HTMLDivElement> & {
+		url: string;
 		input: string;
 		output: LLMResponse;
-		url: string;
+	}> = ({
+		url,
+		input,
+		output,
 	}) => {
 		return (
-			<mdui-card variant="filled">
-				<div className={'w-full p-4 flex flex-col gap-4'}>
-					<div className="flex flex-col gap-2 w-full">
+			<mdui-card variant="filled" role="region" aria-label="Summary of the current webpage">
+				<div className={'w-full p-4 flex flex-col gap-4'} role='generic'>
+					<div className="flex flex-col gap-2 w-full" role='heading'>
 						<div className="flex flex-row typo-body-large text-on-surface-variant gap-2 items-center w-full overflow-hidden overflow-ellipsis">
 							<mdui-icon style={{fontSize: '18px'}} name='public' />
-							<div className="overflow-auto overflow-ellipsis whitespace-nowrap max-w-full">{props.url}</div>
+							<div className="overflow-auto overflow-ellipsis whitespace-nowrap max-w-full">{url}</div>
 						</div>
 						<div
 							className={
 								'typo-headline-small text-on-surface word-break'
 							}
 						>
-							{props.output.answer || RESPONSES.noAnswerFound.message}
+							{output.answer || RESPONSES.noAnswerFound.message}
 						</div>
 					</div>
 					<div className={'flex flex-row gap-2 justify-end'}>
 						<mdui-button-icon icon="download" onClick={() => {
-							downloadResponse(JSON.stringify(props.output), `llm-response_${currentUrl}_${Date.now()}.json`, 'application/json');
+							downloadResponse(JSON.stringify(output), `llm-response_${currentUrl}_${Date.now()}.json`, 'application/json');
 						}}></mdui-button-icon>
 						<mdui-button-icon icon="volume_up" onClick={() => {
-								handleReadResponse(props.output.answer || RESPONSES.noAnswerFound.message);
+								handleReadResponse(output.answer || RESPONSES.noAnswerFound.message);
 						}}></mdui-button-icon>
 					</div>
 				</div>
@@ -111,24 +115,28 @@ const Main = () => {
 	};
 
 	// Create a wrapper for all chat cards
-	const ChatsWrapper = ({
+	const ChatsWrapper: React.FC<
+		React.HTMLAttributes<HTMLDivElement> & {
+			chats: { [url: string]: LLMChat[] };
+			url: string | undefined;
+		}
+	> = ({
 		chats,
 		url,
-	}: {
-		chats: { [url: string]: LLMChat[] };
-		url: string | undefined;
+		...props
 	}) => {
 		const currentChats = url ? chats[url] || [] : [];
 		console.log('Current chats for URL', url, currentChats);
 
 		return (
-			<div className={'flex flex-col gap-8'}>
+			<div className={`flex flex-col gap-8 p-4 chats-anchor`} role='feed'>
 				{currentChats.map((chat) => (
 					<ChatCard
 						key={chat.id}
 						url={url || ''}
 						input={chat.input || ''}
 						output={chat.output!}
+						aria-label='Chat'
 					/>
 				))}
 			</div>
@@ -170,33 +178,25 @@ const Main = () => {
 	// 	}
 	// }
 
+	const BottomAppBar = () => {
+		return (
+			<mdui-bottom-app-bar>
+				<input
+					type={'text'}
+					placeholder={'Type an URL here...'}
+					className='flex-auto text-body-medium text-on-surface-variant'
+					value={input}
+					onChange={(e) => setInput(e.target.value)}
+				/>
+			</mdui-bottom-app-bar>
+		);
+	};
+			
 	return (
 			<mdui-layout-main>
-				<div className="m-4">
-				</div>
-				<div className={'p-4 chats-anchor'}>
-					<ChatsWrapper chats={chats} url={currentUrl} />
-				</div>
-				{/*<mdui-bottom-app-bar*/}
-				{/*	fab-detach*/}
-				{/*	scroll-behavior="hide"*/}
-				{/*	scroll-threshold={10}*/}
-				{/*>*/}
-				{/*	<input*/}
-				{/*		type={'text'}*/}
-				{/*		placeholder={'Type an URL here...'}*/}
-				{/*		className={*/}
-				{/*			' flex-auto text-body-medium text-on-surface-variant'*/}
-				{/*		}*/}
-				{/*		value={input}*/}
-				{/*		onChange={(e) => setInput(e.target.value)}*/}
-				{/*	/>*/}
-				{/*	<div className={'flex-grow'} />*/}
-				{/*	<mdui-fab*/}
-				{/*		icon="send"*/}
-				{/*		onClick={() => sendChat(input)}*/}
-				{/*	></mdui-fab>*/}
-				{/*</mdui-bottom-app-bar>*/}
+				{/* <div className="m-4">
+				</div> */}
+				<ChatsWrapper chats={chats} url={currentUrl} />
 			</mdui-layout-main>
 			);
 };
