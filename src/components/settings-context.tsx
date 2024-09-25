@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, ReactNode, useEffect } from 'react';
 import { LLMProvider, SpeechLanguage } from '@lib/interface';
 
 interface SettingsContextProps {
@@ -34,6 +34,43 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [speechLanguage, setSpeechLanguage] = useState<SpeechLanguage>('en-US');
   const [speechRate, setSpeechRate] = useState<number>(1);
   const [speechVoice, setSpeechVoice] = useState<SpeechSynthesisVoice | null>(null);
+
+  // Load settings from local storage on component mount
+  useEffect(() => {
+    const storedLlmProvider = localStorage.getItem('llmProvider');
+    const storedApiKey = localStorage.getItem('apiKey');
+    const storedSpeechLanguage = localStorage.getItem('speechLanguage');
+    const storedSpeechRate = localStorage.getItem('speechRate');
+    const storedSpeechVoice = localStorage.getItem('speechVoice');
+
+    if (storedLlmProvider) setLlmProvider(storedLlmProvider as LLMProvider);
+    if (storedApiKey) setApiKey(storedApiKey);
+    if (storedSpeechLanguage) setSpeechLanguage(storedSpeechLanguage as SpeechLanguage);
+    if (storedSpeechRate) setSpeechRate(parseInt(storedSpeechRate));
+    if (storedSpeechVoice) {
+      const voices = speechSynthesis.getVoices();
+      const storedVoice = voices.find(voice => voice.name === storedSpeechVoice);
+      if (storedVoice) setSpeechVoice(storedVoice);
+    }
+  }, []);
+
+  // Save settings to local storage when they change
+  useEffect(() => {
+		localStorage.setItem('llmProvider', llmProvider);
+		localStorage.setItem('apiKey', apiKey);
+		localStorage.setItem('speechLanguage', speechLanguage);
+		localStorage.setItem('speechRate', speechRate.toString());
+		if (speechVoice) localStorage.setItem('speechVoice', speechVoice.name);
+
+		// Test the settings object
+		console.log('Saving settings to local storage:', {
+			llmProvider,
+			apiKey,
+			speechLanguage,
+			speechRate,
+			speechVoice: speechVoice?.name || '',
+		});
+  }, [llmProvider, apiKey, speechLanguage, speechRate, speechVoice]);
 
   return (
     <SettingsContext.Provider
