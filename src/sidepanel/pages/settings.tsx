@@ -1,10 +1,19 @@
 // src/pages/settings.tsx
 
-import React, { ChangeEvent, useEffect, useContext, useState, useRef } from 'react';
-import { NavigationDrawer, TextField } from 'mdui';
+import React, {
+	ChangeEvent,
+	useEffect,
+	useContext,
+	useState,
+	useRef,
+} from 'react';
 import { SettingsContext } from '@components/settings-context';
 import { validateApiKey } from '@components/validate-apiKey';
 import { LLMProvider, SpeechLanguage } from '@lib/interface';
+import AccessibleButtonIcon from '@components/accessible/ButtonIcon';
+import AccessibleNavigationDrawer from '@components/accessible/NavigationDrawer';
+import { NavigationDrawer } from 'mdui';
+import { LLM_PROVIDERS, PREFERENCES_DRAWER } from '@lib/accessible-labels';
 
 /**
  * Settings Modal Component
@@ -17,12 +26,11 @@ export const SettingsModal: React.FC<{
 	isOpen: boolean;
 	onClose: () => void;
 }> = ({ isOpen, onClose }) => {
-	const settingsModalRef = useRef<NavigationDrawer>(null);
-
+	const navigationDrawerRef = useRef<NavigationDrawer>(null);
 	const speechVoices = speechSynthesis.getVoices();
 
 	const {
-		llmProvider,
+		llmProvider, 
 		setLlmProvider,
 		apiKey,
 		setApiKey,
@@ -38,7 +46,7 @@ export const SettingsModal: React.FC<{
 		setSpeechVoice,
 	} = useContext(SettingsContext)!;
 
-
+	// LLM configuration
 	function getProviderName(provider: string) {
 		switch (provider) {
 			case 'openai':
@@ -49,7 +57,6 @@ export const SettingsModal: React.FC<{
 				return 'Unknown';
 		}
 	}
-
 	function getLanguageName(language: string) {
 		switch (language) {
 			case 'en-US':
@@ -59,6 +66,19 @@ export const SettingsModal: React.FC<{
 			default:
 				return 'Unknown';
 		}
+	}
+
+	// LLM API Key
+	console.log('Context apiKey:', apiKey);
+
+	useEffect(() => {
+		console.log('apiKey changed:', apiKey);
+	}, [apiKey]);
+
+	const handleApiKeyChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const newApiKey = e.target.value;
+		console.log('newApiKey:', newApiKey);
+		setApiKey(newApiKey);
 	}
 
 	function handleTestApiKey() {
@@ -73,8 +93,8 @@ export const SettingsModal: React.FC<{
 		});
 	}
 
+	// Speech configuration
 	const [isPlaying, setIsPlaying] = useState<boolean>(false);
-
 	function playGreeting() {
 		if (!speechVoice) return;
 
@@ -99,7 +119,6 @@ export const SettingsModal: React.FC<{
 
 		speechSynthesis.speak(utterance);
 	}
-
 	function handlePlayGreeting() {
 		if (isPlaying) {
 			setIsPlaying(false);
@@ -110,37 +129,54 @@ export const SettingsModal: React.FC<{
 		}
 	}
 
-	useEffect(() => {
-		if (settingsModalRef.current) {
-			// Control the 'open' property of the navigation drawer based on 'isOpen' state
-			settingsModalRef.current.open = isOpen;
-		}
-	}, [isOpen]);
 
 	return (
-		<mdui-navigation-drawer
-			ref={settingsModalRef}
+		<AccessibleNavigationDrawer
+			navigationDrawerRef={navigationDrawerRef}
+			isOpen={isOpen}
+			accessibility={{
+				role: PREFERENCES_DRAWER.role,
+				ariaLabel: PREFERENCES_DRAWER.ariaLabel,
+				ariaLabelledBy: PREFERENCES_DRAWER.ariaLabelledBy,
+				ariaDescription: PREFERENCES_DRAWER.ariaDescription,
+			}}
 			placement="right"
 			close-on-esc
 			close-on-overlay-click
 			order={1}
 		>
-			<div className="flex flex-col p-4">
-				<div className="flex flex-row items-center">
-					<div className="typo-title-large self-center">Settings</div>
-					<div className="flex-grow"></div>
-					<mdui-button-icon
-						icon="close"
-						onClick={onClose}
-						variant="tonal"
-					></mdui-button-icon>
-				</div>
+			<div
+				className="flex flex-row items-center p-4"
+				role="toolbar"
+				aria-label="Preferences"
+			>
+				<h1
+					className="typo-title-large self-center"
+					id="settings-title"
+				>
+					Preferences
+				</h1>
+				<div className="flex-grow"></div>
+				<AccessibleButtonIcon
+					icon="close"
+					onClick={onClose}
+					variant="tonal"
+					ariaLabel="Close preferences menu"
+					ariaDescription="Press Enter to close the preferences menu."
+					tabIndex={0}
+				></AccessibleButtonIcon>
 			</div>
-			<mdui-list>
-				<mdui-list-subheader>LLM Providers</mdui-list-subheader>
-				<div className="flex flex-col gap-6 px-4">
+			<mdui-list role="list" aria-label="Preference controls">
+				<mdui-list-subheader
+					className="uppercase"
+					role="heading"
+					aria-label={LLM_PROVIDERS.ariaLabel}
+					aria-description={LLM_PROVIDERS.ariaDescription}
+				>
+					LLM Providers
+				</mdui-list-subheader>
+				<div className="flex flex-col gap-4 px-4">
 					<mdui-segmented-button-group
-						className="border-outline"
 						full-width
 						selects="single"
 						value={llmProvider}
@@ -149,6 +185,9 @@ export const SettingsModal: React.FC<{
 								e.target.value as 'openai' | 'anthropic'
 							)
 						}
+						role="group"
+						aria-label={LLM_PROVIDERS.ariaLabel}
+						aria-description={LLM_PROVIDERS.ariaDescription}
 					>
 						<mdui-segmented-button
 							className="border-outline border"
@@ -165,118 +204,125 @@ export const SettingsModal: React.FC<{
 							Anthropic
 						</mdui-segmented-button>
 					</mdui-segmented-button-group>
-					<div className="flex flex-col gap-2">
-						<mdui-text-field
-							variant="outlined"
-							type="password"
-							label="API Key"
-							icon="key"
-							toggle-password-button
-							placeholder="sk-..."
-							helper={`Enter your ${getProviderName(
-								llmProvider
-							)} API Key.`}
-							// helper-on-focus
-							onChange={(e: ChangeEvent<HTMLInputElement>) =>
-								setApiKey(e.target.value)
-							}
-							onFocus={() => setIsTypingApiKey(true)}
-							onBlur={() => setIsTypingApiKey(false)}
-						/>
-						{isTypingApiKey && (
-							<mdui-button
-								style={{
-									display: isTypingApiKey ? 'block' : 'none',
-								}}
-								variant="tonal"
-								onClick={handleTestApiKey}
-							>
-								Test API Key
-							</mdui-button>
-						)}
-					</div>
-				</div>
-
-				<mdui-list-subheader>Speech</mdui-list-subheader>
-				<mdui-dropdown placement="bottom-start">
-					<mdui-list-item
-						rounded
-						slot="trigger"
-						icon="language"
-						end-icon="arrow_drop_down"
-						title="Language"
-						headline="Language"
-						description={getLanguageName(speechLanguage)}
+					<mdui-text-field
+						variant="outlined"
+						type="password"
+						label="API Key"
+						icon="key"
+						toggle-password-button
+						helper={`Enter your ${getProviderName(llmProvider)} API Key.`}
+						value={apiKey}
+						onChange={handleApiKeyChange}
+						onFocus={() => setIsTypingApiKey(true)}
+						onBlur={() => setIsTypingApiKey(false)}
 					/>
-					<mdui-menu style={{ transform: 'translateX(4em)' }}>
-						{['en-US', 'zh-CN'].map((language) => (
-							<mdui-menu-item
-								key={language}
-								value={language}
-								selected-icon="check"
-								onClick={() =>
-									setSpeechLanguage(
-										language as SpeechLanguage
-									)
-								}
-							>
-								{getLanguageName(language)}
-							</mdui-menu-item>
-						))}
-					</mdui-menu>
-				</mdui-dropdown>
-				<mdui-dropdown placement="bottom-start">
-                    <mdui-list-item
-                        rounded
-						slot="trigger"
-						icon="record_voice_over"
-						end-icon="arrow_drop_down"
-						title="Voice"
-						headline="Voice"
-						description={speechVoice?.name || ''}
-					/>
-					<mdui-menu
-						style={{
-							transform: 'translateX(4em)',
-							maxHeight: '20em',
-							overflowY: 'auto',
-						}}
+					<mdui-button
+						disabled={apiKey.trim() === ''}
+						variant="tonal"
+						onClick={handleTestApiKey}
 					>
-						{speechVoices
-							.filter((voice) => voice.lang === speechLanguage)
-							.map((voice) => (
+						Test API Key
+					</mdui-button>
+				</div>
+			</mdui-list>
+			<mdui-list>
+				<mdui-list-subheader
+					className="uppercase"
+					role="heading"
+					aria-label="Speech"
+				>
+					Speech
+				</mdui-list-subheader>
+				<div className="flex flex-col px-2">
+					<mdui-dropdown placement="bottom-start">
+						<mdui-list-item
+							rounded
+							slot="trigger"
+							icon="language"
+							end-icon="arrow_drop_down"
+							title="Language"
+							headline="Language"
+							description={getLanguageName(speechLanguage)}
+						/>
+						<mdui-menu style={{ transform: 'translateX(4em)' }}>
+							{['en-US', 'zh-CN'].map((language) => (
 								<mdui-menu-item
-									key={voice.name}
-									value={`${voice.name}_${voice.lang}`}
+									key={language}
+									value={language}
 									selected-icon="check"
-									onClick={() => setSpeechVoice(voice)}
+									onClick={() =>
+										setSpeechLanguage(
+											language as SpeechLanguage
+										)
+									}
 								>
-									{voice.name}
+									{getLanguageName(language)}
 								</mdui-menu-item>
 							))}
-					</mdui-menu>
-				</mdui-dropdown>
-				<mdui-list-item nonclickable rounded headline='Speed' description={`${speechRate}x`} icon='speed' />
-				<mdui-slider
-					tickmarks
-					value={speechRate}
-					onInput={(e: ChangeEvent<HTMLInputElement>) =>
-						setSpeechRate(parseFloat(e.target.value))
-					}
-					step={0.25}
-					min={0.5}
-					max={1.5}
-				/>
+						</mdui-menu>
+					</mdui-dropdown>
+					<mdui-dropdown placement="bottom-start">
+						<mdui-list-item
+							rounded
+							slot="trigger"
+							icon="record_voice_over"
+							end-icon="arrow_drop_down"
+							title="Voice"
+							headline="Voice"
+							description={speechVoice?.name || ''}
+						/>
+						<mdui-menu
+							style={{
+								transform: 'translateX(4em)',
+								maxHeight: '20em',
+								overflowY: 'auto',
+							}}
+						>
+							{speechVoices
+								.filter(
+									(voice) => voice.lang === speechLanguage
+								)
+								.map((voice) => (
+									<mdui-menu-item
+										key={voice.name}
+										value={`${voice.name}_${voice.lang}`}
+										selected-icon="check"
+										onClick={() => setSpeechVoice(voice)}
+									>
+										{voice.name}
+									</mdui-menu-item>
+								))}
+						</mdui-menu>
+					</mdui-dropdown>
+					<mdui-list-item
+						nonclickable
+						rounded
+						headline="Speed"
+						description={`${speechRate}x`}
+						icon="speed"
+					/>
+					<mdui-slider
+						style={{ marginBottom: '1em' }}
+						tickmarks
+						value={speechRate}
+						onInput={(e: ChangeEvent<HTMLInputElement>) =>
+							setSpeechRate(parseFloat(e.target.value))
+						}
+						step={0.25}
+						min={0.5}
+						max={1.5}
+					/>
+					<mdui-button
+						style={{ margin: '0.5em' }}
+						full-width
+						icon={isPlaying ? 'pause' : 'play_arrow'}
+						variant={isPlaying ? 'elevated' : 'tonal'}
+						onClick={handlePlayGreeting}
+					>
+						{isPlaying ? 'Pause' : 'Play'}
+					</mdui-button>
+				</div>
 			</mdui-list>
-			<div className="flex flex-row p-4">
-				<mdui-button
-					icon={isPlaying ? 'pause' : 'play_arrow'}
-					variant={isPlaying ? 'elevated' : 'tonal'}
-					onClick={handlePlayGreeting}
-				>
-					{isPlaying ? 'Pause' : 'Play'}
-				</mdui-button>
-			</div>
-		</mdui-navigation-drawer>
+		</AccessibleNavigationDrawer>
 	);
 };

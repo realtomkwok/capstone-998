@@ -9,6 +9,9 @@ import Main from './pages/main';
 import { MaterialSymbol } from '@components/material-symbol';
 import { SettingsModal } from './pages/settings';
 import AccessibleButtonIcon from '@components/accessible/ButtonIcon';
+import { SETTINGS_BUTTON, TOP_APP_BAR } from '@lib/accessible-labels';
+
+
 const TopAppBar: React.FC<{ onOpenSettings: () => void }> = ({
 	onOpenSettings,
 }) => {
@@ -17,34 +20,35 @@ const TopAppBar: React.FC<{ onOpenSettings: () => void }> = ({
 			variant="small"
 			className="flex flex-row items-center justify-between"
 			role="banner"
-			aria-label="Clara app toolbar"
+			aria-label={TOP_APP_BAR.ariaLabel}
+			aria-description={TOP_APP_BAR.ariaDescription}
 		>
-			<div className="flex flex-row gap-2 items-center">
-				<MaterialSymbol
-					symbol="family_star"
-					fill={true}
-					weight={400}
-					grade={200}
-					opticalSize={24}
-					role="presentation"
-				/>
-				<mdui-top-app-bar-title
-					className="font-semibold"
-					aria-label="Press Tab to start using Clara"
-					role="title"
-				>
-					Clara
-				</mdui-top-app-bar-title>
-			</div>
-			<div className="flex-1" aria-hidden={true}></div>
+			<MaterialSymbol
+				symbol="family_star"
+				fill={true}
+				weight={400}
+				grade={200}
+				opticalSize={24}
+				role="presentation"
+				aria-hidden={true}
+				aria-label="Clara logo"
+			/>
+			<mdui-top-app-bar-title
+				className="font-semibold"
+				aria-label="Clara"
+				role="title"
+			>
+				Clara
+			</mdui-top-app-bar-title>
+			<div className="flex-1" aria-hidden={true} />
 			{/* TODO: Add keyboard shortcut to open settings */}
 			<AccessibleButtonIcon
 				icon="tune"
 				onClick={onOpenSettings}
 				className="mr-4"
 				role="button"
-				ariaLabel="Open settings to change Clara preferences"
-				ariaDescription="You can change Clara's settings by clicking here, including language, voice, and speed."
+				ariaLabel={SETTINGS_BUTTON.ariaLabel}
+				ariaDescription={SETTINGS_BUTTON.ariaDescription}
 			/>
 		</mdui-top-app-bar>
 	);
@@ -60,7 +64,7 @@ const Sidepanel: React.FC = () => {
 	const toggleSettingsModal = () => setShowSettings((prev) => !prev);
 
 	return (
-		<mdui-layout full-height className='font-medium' role='main' aria-label="Hi I'm Clara!">
+		<mdui-layout full-height className='font-medium' role='main' aria-label="Application">
 			{/* Top App Bar */}
 			<TopAppBar onOpenSettings={toggleSettingsModal} />
 			{/* Main Content Area*/}

@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Clara",
-    "version": "0.4.0-beta",
+    "version": "0.4.1",
     "description": "An AI-powered screen reader for the web",
 	"icons": {
 		"16": "icons/icon_16.png",
@@ -27,15 +27,15 @@
     "commands": {
         "_execute_action": {
             "suggested_key": {
-                "default": "Alt+1",
-                "mac": "MacCtrl+1"
+                "default": "Ctrl+Shift+1",
+                "mac": "MacCtrl+Shift+1"
             },
             "description": "Opens the Clara side panel"
         },
         "start_reading": {
             "suggested_key": {
-                "default": "Alt+2",
-                "mac": "MacCtrl+2"
+                "default": "Ctrl+Shift+2",
+                "mac": "MacCtrl+Shift+2"
             },
             "description": "Starts reading the current page"
         }

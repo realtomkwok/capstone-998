@@ -3,71 +3,68 @@
 import 'mdui';
 import 'mdui/mdui.css';
 
-import {
-	LLMChat,
-	LLMResponse,
-	MsgBackgroundToSidepanel,
-} from '@lib/interface';
+import { LLMChat, LLMResponse, MsgBackgroundToSidepanel } from '@lib/interface';
 import React, { useEffect, useState, useContext } from 'react';
 import { readText, downloadResponse } from '@lib/helper';
 import { RESPONSES } from '@lib/responses';
 import { SettingsContext } from '@components/settings-context';
 
 const Main = () => {
-
 	const [chats, setChats] = React.useState<{ [url: string]: LLMChat[] }>({});
 	const [input, setInput] = React.useState<string>('');
- 	const [initResponse, setInitResponse] = useState<
-		LLMResponse | undefined
-		>(undefined);
+	const [initResponse, setInitResponse] = useState<LLMResponse | undefined>(
+		undefined
+	);
 	const [isLoading, setIsLoading] = React.useState<boolean>(false);
 	const [currentUrl, setCurrentUrl] = React.useState<string | undefined>();
-	const {
-		speechLanguage,
-		speechRate,
-		speechVoice,
-	} = useContext(SettingsContext)!;
+	const { speechLanguage, speechRate, speechVoice } =
+		useContext(SettingsContext)!;
 
 	useEffect(() => {
 		// Notify the background script that the sidepanel is ready
-		chrome.runtime.sendMessage({ type: 'SIDEPANEL_READY' }).finally();
+		chrome.runtime.sendMessage({ type: 'SIDEPANEL_READY' });
 
-			// Set up listener for incoming messages
-			const messageListener = (message: MsgBackgroundToSidepanel) => {
+		// Set up listener for incoming messages
+		const messageListener = (message: MsgBackgroundToSidepanel) => {
+			if (message.url) {
 				if (message.type === 'UPDATE_URL') {
 					setCurrentUrl(message.url);
-					setIsLoading(true);
+					setIsLoading(!chats[message.url]);
 				} else if (message.type === 'UPDATE_RESPONSE') {
+					const updateMessage = message as {
+						type: 'UPDATE_RESPONSE';
+						response: LLMResponse;
+						url: string;
+					};
 					setIsLoading(false);
-					setInitResponse(message.response);
+					setInitResponse(updateMessage.response);
+
+					// Add the response to the chat list if it doesn't exist
+					setChats((prevChats) => {
+						if (!prevChats[updateMessage.url]) {
+							return {
+								...prevChats,
+								[updateMessage.url]: [
+									{
+										id: Date.now().toString(),
+										input: '',
+										output: updateMessage.response,
+									},
+								],
+							};
+						}
+						return prevChats;
+					});
 				}
-			};
-
-			// Add the listener to the runtime
-			chrome.runtime.onMessage.addListener(messageListener);
-
-			// Cleanup the listener when the component unmounts
-			return () => {
-				chrome.runtime.onMessage.removeListener(messageListener);
+			}
 		};
-	}, [currentUrl]);
 
-	// When the init response is set, add it to the chat list
-	useEffect(() => {
-		if (initResponse !== undefined && currentUrl) {
-			setChats((prevChats) => ({
-				...prevChats,
-				[currentUrl || 'unknown-url']: [
-					...(prevChats[currentUrl] || []),
-					{
-						id: Date.now().toString(),
-						input: input,
-						output: initResponse,
-					},
-				]
-			}));
-		}
-	}, [initResponse, currentUrl]);
+		// Add the listener to the runtime
+		chrome.runtime.onMessage.addListener(messageListener);
+
+		// Cleanup the listener when the component unmounts
+		return () => chrome.runtime.onMessage.removeListener(messageListener);
+	}, []);
 
 	function handleReadResponse(content: string) {
 		if (initResponse) {
@@ -76,22 +73,32 @@ const Main = () => {
 	}
 
 	// Create a new chat card
-	const ChatCard: React.FC<React.HTMLAttributes<HTMLDivElement> & {
-		url: string;
-		input: string;
-		output: LLMResponse;
-	}> = ({
-		url,
-		input,
-		output,
-	}) => {
+	const ChatCard: React.FC<
+		React.HTMLAttributes<HTMLDivElement> & {
+			url: string;
+			input: string;
+			output: LLMResponse;
+		}
+	> = ({ url, input, output }) => {
 		return (
-			<mdui-card variant="filled" role="region" aria-label="Summary of the current webpage">
-				<div className={'w-full p-4 flex flex-col gap-4'} role='generic'>
-					<div className="flex flex-col gap-2 w-full" role='heading'>
+			<mdui-card
+				variant="filled"
+				role="region"
+				aria-label="Summary of the current webpage"
+			>
+				<div
+					className={'w-full p-4 flex flex-col gap-4'}
+					role="generic"
+				>
+					<div className="flex flex-col gap-2 w-full" role="heading">
 						<div className="flex flex-row typo-body-large text-on-surface-variant gap-2 items-center w-full overflow-hidden overflow-ellipsis">
-							<mdui-icon style={{fontSize: '18px'}} name='public' />
-							<div className="overflow-auto overflow-ellipsis whitespace-nowrap max-w-full">{url}</div>
+							<mdui-icon
+								style={{ fontSize: '18px' }}
+								name="public"
+							/>
+							<div className="overflow-auto overflow-ellipsis whitespace-nowrap max-w-full">
+								{url}
+							</div>
 						</div>
 						<div
 							className={
@@ -102,12 +109,25 @@ const Main = () => {
 						</div>
 					</div>
 					<div className={'flex flex-row gap-2 justify-end'}>
-						<mdui-button-icon icon="download" onClick={() => {
-							downloadResponse(JSON.stringify(output), `llm-response_${currentUrl}_${Date.now()}.json`, 'application/json');
-						}}></mdui-button-icon>
-						<mdui-button-icon icon="volume_up" onClick={() => {
-								handleReadResponse(output.answer || RESPONSES.noAnswerFound.message);
-						}}></mdui-button-icon>
+						<mdui-button-icon
+							icon="download"
+							onClick={() => {
+								downloadResponse(
+									JSON.stringify(output),
+									`llm-response_${currentUrl}_${Date.now()}.json`,
+									'application/json'
+								);
+							}}
+						></mdui-button-icon>
+						<mdui-button-icon
+							icon="volume_up"
+							onClick={() => {
+								handleReadResponse(
+									output.answer ||
+										RESPONSES.noAnswerFound.message
+								);
+							}}
+						></mdui-button-icon>
 					</div>
 				</div>
 			</mdui-card>
@@ -120,23 +140,19 @@ const Main = () => {
 			chats: { [url: string]: LLMChat[] };
 			url: string | undefined;
 		}
-	> = ({
-		chats,
-		url,
-		...props
-	}) => {
+	> = ({ chats, url, ...props }) => {
 		const currentChats = url ? chats[url] || [] : [];
 		console.log('Current chats for URL', url, currentChats);
 
 		return (
-			<div className={`flex flex-col gap-8 p-4 chats-anchor`} role='feed'>
+			<div className={`flex flex-col gap-8 p-4 chats-anchor`} role="feed">
 				{currentChats.map((chat) => (
 					<ChatCard
 						key={chat.id}
 						url={url || ''}
 						input={chat.input || ''}
 						output={chat.output!}
-						aria-label='Chat'
+						aria-label="Chat"
 					/>
 				))}
 			</div>
@@ -184,20 +200,20 @@ const Main = () => {
 				<input
 					type={'text'}
 					placeholder={'Type an URL here...'}
-					className='flex-auto text-body-medium text-on-surface-variant'
+					className="flex-auto text-body-medium text-on-surface-variant"
 					value={input}
 					onChange={(e) => setInput(e.target.value)}
 				/>
 			</mdui-bottom-app-bar>
 		);
 	};
-			
+
 	return (
-			<mdui-layout-main>
-				{/* <div className="m-4">
+		<mdui-layout-main>
+			{/* <div className="m-4">
 				</div> */}
-				<ChatsWrapper chats={chats} url={currentUrl} />
-			</mdui-layout-main>
-			);
+			<ChatsWrapper chats={chats} url={currentUrl} />
+		</mdui-layout-main>
+	);
 };
-export default Main
+export default Main;

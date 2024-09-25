@@ -31,8 +31,8 @@ const AccessibleButtonIcon: React.FC<AccessibleButtonIconProps> = ({
                 ref={buttonRef}
                 {...props}
 			></mdui-button-icon>
-			<span className="sr-only">{ariaLabel}</span>
-			{ariaDescription && <span className="sr-only">{ariaDescription}</span>}
+			{/* <span className="sr-only">{ariaLabel}</span>
+			{ariaDescription && <span className="sr-only">{ariaDescription}</span>} */}
 		</>
 	);
 };

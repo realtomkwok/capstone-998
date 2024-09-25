@@ -148,32 +148,33 @@ export async function embedDocuments(
  * @returns An object containing the document chain and format instructions for the structured output
  */
 export async function createDocumentChain(
-	provider: LLMProvider,
+    provider: LLMProvider,
+    modelName?: string,
+    apiKey?: string
 ) {
 	try {
-		console.log(`Creating document chain for provider: ${provider}`);
+		// console.log(`Creating document chain for provider: ${provider}`);
 		let model;
 		switch (provider) {
 			case 'openai':
-				console.log('Initializing OpenAI model');
+				// console.log('Initializing OpenAI model');
 				model = new ChatOpenAI({
-					modelName: 'gpt-4o-mini',
+					modelName: modelName || 'gpt-4o-mini',
 					temperature: 0,
-            apiKey: process.env.OPENAI_API_KEY,
+                    apiKey: apiKey || process.env.OPENAI_API_KEY,
 				});
 				break;
 			case 'anthropic':
-				console.log('Initializing Anthropic model');
+				// console.log('Initializing Anthropic model');
 				model = new ChatAnthropic({
-					model: 'claude-3-5-sonnet-20240620',
+					model: modelName || 'claude-3-5-sonnet-20240620',
 					temperature: 0,
-            apiKey: process.env.ANTHROPIC_API_KEY,
+                    apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
 				});
 				break;
 		}
 
 		const outputSchema: z.ZodObject<any, any> = OUTPUT_SCHEMES('news');
-		console.log('Output schema:', outputSchema);
 
 		const parser = StructuredOutputParser.fromZodSchema(outputSchema);
 
@@ -189,12 +190,11 @@ export async function createDocumentChain(
 		]);
 
 		const formatInstructions = parser.getFormatInstructions();
-		console.log('Format instructions:', formatInstructions);
 
-		console.log('Document chain created successfully');
+		// console.log('Document chain created successfully');
 		return { chain, formatInstructions };
 	} catch (error) {
-		console.error('Error in createDocumentChain function:', error);
+		// console.error('Error in createDocumentChain function:', error);
 		throw new Error(`Failed to create document chain: ${error}`);
 	}
 }
@@ -210,17 +210,17 @@ export async function createDocumentChain(
 
 export async function startLLM(
     url: string,
-    provider: LLMProvider,
+    provider: LLMProvider = "openai",
     chunkSize: number    = 1000,
     chunkOverlap: number = 200,
-): Promise<LLMResponse> {
+): Promise<LLMResponse> {    
     try {
         // Play a sound to indicate that the LLM process has started
-        console.log(`Starting LLM process for URL: ${url}`)
+        // console.log(`Starting LLM process for URL: ${url}`)
         
         // Load the page
         const page = await loadUrl(url)
-        console.log("Page loaded successfully")
+        // console.log("Page loaded successfully")
         const rawMarkdown = page.markdown
         // const rawHtml = page.html
         
@@ -238,15 +238,15 @@ export async function startLLM(
         // console.log(`Document chunks: ${chunks.length} embedded into retriever`)
         
         const { chain, formatInstructions } = await createDocumentChain(provider)
-        console.log("Document chain created")
+        // console.log("Document chain created")
         
-        console.log("Invoking chain...")
+        // console.log("Invoking chain...")
         const response = await chain.invoke({
             context: rawMarkdown,
             question: '',
             format_instructions: formatInstructions,
         })
-        console.log("Chain invoked successfully")
+        // console.log("Chain invoked successfully")
         console.log("LLM Response:", response)
         
         return response as LLMResponse
@@ -255,10 +255,10 @@ export async function startLLM(
         console.error("Error in startLLMProcess:", error)
         throw new Error(`Failed to process LLM request: ${error}`)
     } finally {
-        if (typeof window !== 'undefined' && window.Audio) {
-            new Audio('/public/sounds/cheers.wav').play()
-            .catch(error => console.error('Error playing sound:', error))
-        }
+        // if (typeof window !== 'undefined' && window.Audio) {
+        //     new Audio('/public/sounds/cheers.wav').play()
+        //     .catch(error => console.error('Error playing sound:', error))
+        // }
     }
 }
 
@@ -299,3 +299,13 @@ export function downloadResponse(
     a.download = fileName
     a.click()
 }
+
+export const urlPattern = new RegExp(
+	'^(https?:\\/\\/)?' + // protocol
+		'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+		'((\\d{1,3}\\.){3}\\d{1,3}))' + // OR IP (v4) address
+		'(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+		'(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+		'(\\#[-a-z\\d_]*)?$',
+	'i'
+);

@@ -1,73 +1,99 @@
 'use strict';
 
-// With background scripts you can communicate with sidepanel
-// and contentScript files.
-// For more information on background script,
-// See https://developer.chrome.com/extensions/background_pages
+// Communication between background script and sidepanel
+// Should call the LLM when the sidepanel is ready
+// The content should be refreshed when the tab is changed
+// Prevent the same URL from being processed multiple times
 
-import { startLLM } from "./lib/helper"
+import { startLLM } from './lib/helper';
 
-let lastProcessedUrl = '';
+let processedUrls = {};
+
+let urlPattern = new RegExp(
+	'^(https?:\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)$'
+);
 
 // Allows users to open the side panel by clicking on the action toolbar icon
 chrome.sidePanel
 	.setPanelBehavior({ openPanelOnActionClick: true })
 	.catch((error) => console.error(error));
 
+// Initialize processedUrls from storage
+chrome.storage.local.get('processedUrls', (result) => {
+	processedUrls = result.processedUrls || {};
+	console.log('Initialized processedUrls:', processedUrls);
+});
+
 // Read the URL of the current tab and initialize LLM
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	if (message.type === 'SIDEPANEL_READY') {
-		chrome.tabs.query({ active: true, currentWindow: true }, async ([tab]) => {
-			if (tab && tab.url) {
-				await handleTabChange(tab);
-			}
-		});
+		console.log('Sidepanel ready message received');
+		updateCurrentTab();
 	}
 });
 
-async function handleTabChange(tab) {
+// Listen for tab changes
+chrome.tabs.onActivated.addListener(updateCurrentTab);
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+	if (changeInfo.status === 'complete') {
+		console.log('Tab updated with new URL:', changeInfo.url);
+		updateCurrentTab();
+	}
+});
+
+async function updateCurrentTab() {
 	try {
-		if (tab.url === lastProcessedUrl) {
-			console.log('Same URL:', tab.url);
-			return;
-		}
-
-		// Update lastProcessedUrl
-		lastProcessedUrl = tab.url;
-
-		await chrome.runtime.sendMessage({
-			type: 'UPDATE_URL',
-			url: tab.url,
-		}).catch(error => {
-			console.log('Error sending UPDATE_URL message:', error);
+		const [tab] = await chrome.tabs.query({
+			active: true,
+			currentWindow: true,
 		});
+		if (tab && tab.url && urlPattern.test(tab.url)) {
+			console.log('Current tab URL:', tab.url);
+			console.log('Processed URLs:', Object.keys(processedUrls));
 
-		// Check if the URL is valid
-		const urlPattern = new RegExp('^(https?:\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)$');
-		
-		// If valid URL, start LLM
-		if (urlPattern.test(tab.url)) {
-			const response = await startLLM(tab.url, 'openai');
 			await chrome.runtime.sendMessage({
-				type: 'UPDATE_RESPONSE',
-				response: response,
-			}).catch(error => {
-				console.log('Error sending UPDATE_RESPONSE message:', error);
-			}).finally(() => {
-				console.log('LLM completed and response has been sent to sidepanel');
-			});
-		} else {
-			console.log('Invalid URL:', tab.url);
+				type: 'UPDATE_URL',
+				url: tab.url,
+			})
+
+			if (!processedUrls[tab.url]) {
+				console.log('URL not processed before, handling new URL');
+				await handleNewUrl(tab.url);
+			} else {
+				console.log('URL already processed');
+			}
 		}
 	} catch (error) {
-		console.log(error);
+		console.error('Error updating current tab:', error);
 	}
 }
 
+async function handleNewUrl(url) {
+	console.log('Handling new URL:', url);
+	await chrome.runtime
+		.sendMessage({
+			type: 'UPDATE_URL',
+			url: url,
+		})
+		.catch((error) => {
+			console.log('Error sending UPDATE_URL message:', error);
+		});
 
-// New listener for tab updates
-chrome.tabs.onUpdated.addListener((changeInfo, tab) => {
-	if (changeInfo.url) {
-		handleTabChange(tab);
+	try {
+		console.log('Starting LLM');
+		const response = await startLLM(url, 'openai');
+		processedUrls[url] = response;
+		chrome.storage.local.set({ processedUrls: processedUrls }, () => {
+			console.log('Stored processedUrls:', processedUrls);
+		});
+		await chrome.runtime.sendMessage({
+			type: 'UPDATE_RESPONSE',
+			response: response,
+			url: url,
+		});
+		console.log('LLM completed and response sent to sidepanel already.');
+	} catch (error) {
+		console.error('Error handling new URL:', error);
 	}
-});
+}
