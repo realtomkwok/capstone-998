@@ -80,9 +80,10 @@ async function handleNewUrl(url) {
 		console.log('Starting LLM');
 		const response = await startLLM(url, 'openai');
 		processedUrls[url] = response;
-		chrome.storage.local.set({ processedUrls: processedUrls }, () => {
-			console.log('Stored processedUrls:', processedUrls);
-		});
+		// TODO: Store processedUrls only when the response is successfully processed
+//		chrome.storage.local.set({ processedUrls: processedUrls }, () => {
+//			console.log('Stored processedUrls:', processedUrls);
+//		});
 		await chrome.runtime.sendMessage({
 			type: 'UPDATE_RESPONSE',
 			response: response,

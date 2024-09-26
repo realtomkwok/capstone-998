@@ -3,7 +3,7 @@ import {
 	RecursiveCharacterTextSplitter,
 } from '@langchain/textsplitters';
 import { Document } from '@langchain/core/documents';
-import { ChatOpenAI, OpenAI, OpenAIEmbeddings } from '@langchain/openai';
+import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
 import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 import FirecrawlApp, { ScrapeResponse } from '@mendable/firecrawl-js';
@@ -11,9 +11,10 @@ import { z } from 'zod';
 import { StructuredOutputParser } from 'langchain/output_parsers';
 import { RunnableSequence } from '@langchain/core/runnables';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { ASSISTANT_MSG, INIT_PROMPT, SYSTEM_MSG, USER_MSG } from '@lib/prompts';
-import { LLMProvider, ScrapePageData, LLMResponse } from '@lib/interface';
+import { ASSISTANT_MSG, SYSTEM_MSG, USER_MSG } from '@lib/prompts';
+import { LLMProvider, ScrapePageData, LLMResponse } from "@lib/interface"
 import { OUTPUT_SCHEMES } from './response-format';
+import { getStorage } from "@lib/storage"
 
 /**
  * Loads and scrapes the content of a given URL using FirecrawlApp.
@@ -42,12 +43,8 @@ export async function loadUrl(url: string): Promise<ScrapePageData> {
 				},
 			})
 			.catch((error) => {
-				console.error(error);
 				throw error;
 			});
-
-		console.log(`URL loaded: ${url}`);
-		console.log(scrapeResponse.data);
 
 		return {
 			content: scrapeResponse.data.content,
@@ -58,7 +55,6 @@ export async function loadUrl(url: string): Promise<ScrapePageData> {
 			screenshot: scrapeResponse.data.screenshot,
 		};
 	} catch (error) {
-		console.error(`Error loading URL: ${url}`, error);
 		throw error;
 	}
 }
@@ -108,7 +104,6 @@ export async function splitDocument(
 
 		return combinedDocuments;
 	} catch (error) {
-		console.error('Error in splitDocument function:', error);
 		throw new Error('Failed to split document: ' + error);
 	}
 }
@@ -140,7 +135,6 @@ export async function embedDocuments(chunks: Document[]) {
 
 		return retriever;
 	} catch (error) {
-		console.error('Error in embedDocuments function:', error);
 		throw new Error('Failed to embed documents: ' + error);
 	}
 }
@@ -148,6 +142,8 @@ export async function embedDocuments(chunks: Document[]) {
 /**
  * Creates a document chain for summarizing and extracting key content from a given context.
  * @param provider The language model provider to use: Open AI or Anthropic Claude
+ * @param modelName
+ * @param apiKey
  * @returns An object containing the document chain and format instructions for the structured output
  */
 export async function createDocumentChain(
@@ -197,8 +193,31 @@ export async function createDocumentChain(
 		// console.log('Document chain created successfully');
 		return { chain, formatInstructions };
 	} catch (error) {
-		// console.error('Error in createDocumentChain function:', error);
 		throw new Error(`Failed to create document chain: ${error}`);
+	}
+}
+
+/**
+ * Starts the scraping process by loading a URL and caching the result. Intended for background processing when the user visits a page.
+ * @param url The URL to load and scrape
+ * @returns An object containing the scraped content, metadata, and links on the page
+ */
+
+export async function startScrapePage(url: string): Promise<ScrapePageData> {
+	const storage = getStorage()
+	const cachedPageKey = `scraped-page-${url}`;
+	const CACHE_EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
+	
+		const cachedPage = await storage.getItem(cachedPageKey);
+		if (cachedPage?.timestamp && Date.now() - cachedPage.timestamp < CACHE_EXPIRATION) {
+			return cachedPage.data;
+	} else {
+		const page = await loadUrl(url);
+		await storage.setItem(cachedPageKey, {
+			data: page,
+			timestamp: Date.now()
+		})
+		return page
 	}
 }
 
@@ -206,83 +225,26 @@ export async function createDocumentChain(
  * Starts the LLM pipeline process by loading a URL, splitting the document, embedding the chunks, and creating a document chain. Intended for background processing when the user visits a page.
  * @param url The URL to load and process
  * @param provider The language model provider to use. Default is OpenAI. Supported providers: 'openai', 'anthropic'
- * @param chunkSize The size of each chunk
- * @param chunkOverlap The overlap between chunks
  * @return The response from the LLM pipeline
  */
 
 export async function startLLM(
 	url: string,
 	provider: LLMProvider = 'openai',
-	chunkSize: number = 1000,
-	chunkOverlap: number = 200
 ): Promise<LLMResponse> {
-	const cachedPageKey = `scraped-page-${url}`;
-	const cachedLLMResponseKey = `llm-response-${url}`;
-	const CACHE_EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
-
-	try {
-		// Play a sound to indicate that the LLM process has started
-		// console.log(`Starting LLM process for URL: ${url}`)
-
-		// Check if the page is cached
-		const cachedPage = localStorage.getItem(cachedPageKey);
-		let page: ScrapePageData;
-
-		if (cachedPage) {
-			const { data, timestamp } = JSON.parse(cachedPage);
-			if (Date.now() - timestamp < CACHE_EXPIRATION) {
-				return data as LLMResponse;
-			}
-		}
-
-		// If the code reaches here, the cached page is expired or not cached
-		page = await loadUrl(url);
-		localStorage.setItem(
-			cachedPageKey,
-			JSON.stringify(page as ScrapePageData)
-		);
-
-		// Check if LLM response is cached
-		const cachedResponse = localStorage.getItem(cachedLLMResponseKey);
-		if (cachedResponse) {
-			const { data, timestamp } = JSON.parse(cachedResponse);
-			if (Date.now() - timestamp < CACHE_EXPIRATION) {
-				return data as LLMResponse;
-			}
-		}
-
-		// If the code reaches here, the cached response is expired or not cached
+	// TODO: Play a sound to indicate that the LLM process has started
+	return startScrapePage(url).then(async (page) => {
 		const { chain, formatInstructions } = await createDocumentChain(
 			provider
 		);
-
 		const response = await chain.invoke({
 			context: page.markdown,
 			question: '',
 			format_instructions: formatInstructions,
 		});
 
-		// Cache the response
-		localStorage.setItem(
-			cachedLLMResponseKey,
-			JSON.stringify({
-				url: url,
-				data: response,
-				timestamp: Date.now(),
-			})
-		);
-
 		return response as LLMResponse;
-	} catch (error) {
-		console.error('Error in startLLMProcess:', error);
-		throw new Error(`Failed to process LLM request: ${error}`);
-	} finally {
-		// if (typeof window !== 'undefined' && window.Audio) {
-		//     new Audio('/public/sounds/cheers.wav').play()
-		//     .catch(error => console.error('Error playing sound:', error))
-		// }
-	}
+	});
 }
 
 // TODO: Implement the following-up context function
@@ -291,9 +253,9 @@ export async function startLLM(
  * Reads out the given text using the browser's speech synthesis API.
  * @param text The text to read
  * @param language The language to use for speech synthesis
- * @param pitch The pitch of the voice
  * @param rate The rate of speech
  * TODO: Try another TTS engine if the browser's API is not available
+ * @param speechVoice
  */
 
 export function readText(

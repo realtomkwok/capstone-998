@@ -14,7 +14,7 @@ import AccessibleButtonIcon from '@components/accessible/ButtonIcon';
 import AccessibleNavigationDrawer from '@components/accessible/NavigationDrawer';
 import { NavigationDrawer, TextField } from "mdui"
 import { LLM_PROVIDERS, PREFERENCES_DRAWER } from '@lib/accessible-labels';
-import { clearCachedResponse, clearProcessedUrls } from '@lib/helper';
+import { clearProcessedUrls } from '@lib/helper';
 
 /**
  * Settings Modal Component

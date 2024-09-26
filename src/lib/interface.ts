@@ -1,4 +1,4 @@
-import { AriaAttributes, AriaRole } from "react";
+import { AriaRole } from "react";
 
 export interface LLMResponse {
 	answer: string;
@@ -69,4 +69,10 @@ export interface MaterialSymbolProps {
 	role: AriaRole;
 }
 
-export type SpeechLanguage = 'en-US' | 'zh-CN' 
+export type SpeechLanguage = 'en-US' | 'zh-CN'
+
+export interface ICachedPage {
+	data: ScrapePageData
+	timestamp: number
+}
+
