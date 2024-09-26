@@ -6,7 +6,7 @@ import { LLMProvider } from '../lib/interface';
 export const validateApiKey = async (apiKey: string, provider: LLMProvider) => {
 	if (!apiKey.trim())
 		return {
-			result: false,
+			isValid: false,
 			msg: 'API Key is empty',
 		};
 
@@ -20,16 +20,14 @@ export const validateApiKey = async (apiKey: string, provider: LLMProvider) => {
 				const anthropic = new ChatAnthropic({ apiKey });
 				await anthropic.invoke('Test the API key');
 				break;
-			default:
-				throw new Error('Unsupported provider');
 		}
 		return {
-			result: true,
+			isValid: true,
 			msg: 'API Key is valid! You can use it now.',
 		};
 	} catch (error) {
 		return {
-			result: false,
+			isValid: false,
 			msg: 'API Key is invalid',
 		};
 	}

@@ -12,7 +12,7 @@ import { validateApiKey } from '@components/validate-apiKey';
 import { LLMProvider, SpeechLanguage } from '@lib/interface';
 import AccessibleButtonIcon from '@components/accessible/ButtonIcon';
 import AccessibleNavigationDrawer from '@components/accessible/NavigationDrawer';
-import { NavigationDrawer } from 'mdui';
+import { NavigationDrawer, TextField } from "mdui"
 import { LLM_PROVIDERS, PREFERENCES_DRAWER } from '@lib/accessible-labels';
 import { clearCachedResponse, clearProcessedUrls } from '@lib/helper';
 
@@ -70,32 +70,33 @@ export const SettingsModal: React.FC<{
 	}
 
 	// LLM API Key
-	console.log('Context apiKey:', apiKey);
-
 	useEffect(() => {
-		console.log('apiKey changed:', apiKey);
+		const textfield = document.getElementById('api-key') as TextField;
+		textfield.addEventListener('input', (e) => {
+			setApiKey((e.target as HTMLInputElement).value);
+		})
 	}, [apiKey]);
-
-	const handleApiKeyChange = (e: ChangeEvent<HTMLInputElement>) => {
-		const newApiKey = e.target.value;
-		console.log('newApiKey:', newApiKey);
-		setApiKey(newApiKey);
-	}
-
-	function handleTestApiKey() {
-		setIsValidatingApiKey(true);
-		validateApiKey(apiKey, llmProvider).then((isValid) => {
-			setIsValidatingApiKey(false);
-			if (isValid) {
-				alert('API Key is valid.');
-			} else {
-				alert('API Key is invalid.');
-			}
-		});
+	
+	async function handleApiKey(apiKey: string, provider: LLMProvider) {
+		if (apiKey) {
+			setIsValidatingApiKey(true);
+			await validateApiKey(apiKey, provider)
+				.then((result) => {
+					const textfield = document.getElementById('api-key') as TextField;
+					if (result.isValid) {
+						localStorage.setItem('apiKey', apiKey);
+						textfield.helper = result.msg;
+					} else {
+						textfield.setCustomValidity(result.msg);
+					}
+			})
+				.finally(() => setIsValidatingApiKey(false));
+		}
 	}
 
 	// Speech configuration
 	const [isPlaying, setIsPlaying] = useState<boolean>(false);
+	
 	function playGreeting() {
 		if (!speechVoice) return;
 
@@ -120,6 +121,7 @@ export const SettingsModal: React.FC<{
 
 		speechSynthesis.speak(utterance);
 	}
+	
 	function handlePlayGreeting() {
 		if (isPlaying) {
 			setIsPlaying(false);
@@ -183,7 +185,7 @@ export const SettingsModal: React.FC<{
 						value={llmProvider}
 						onChange={(e: ChangeEvent<HTMLInputElement>) =>
 							setLlmProvider(
-								e.target.value as 'openai' | 'anthropic'
+								e.target.value as LLMProvider
 							)
 						}
 						role="group"
@@ -206,21 +208,19 @@ export const SettingsModal: React.FC<{
 						</mdui-segmented-button>
 					</mdui-segmented-button-group>
 					<mdui-text-field
+						id="api-key"
 						variant="outlined"
 						type="password"
 						label="API Key"
 						icon="key"
-						toggle-password-button
-						helper={`Enter your ${getProviderName(llmProvider)} API Key.`}
 						value={apiKey}
-						onChange={handleApiKeyChange}
-						onFocus={() => setIsTypingApiKey(true)}
-						onBlur={() => setIsTypingApiKey(false)}
+						toggle-password
+						helper={`Enter your ${getProviderName(llmProvider)} API Key.`}
 					/>
 					<mdui-button
-						disabled={apiKey.trim() === ''}
 						variant="tonal"
-						onClick={handleTestApiKey}
+						loading={isValidatingApiKey}
+						onClick={() => handleApiKey(apiKey, llmProvider)}
 					>
 						Test API Key
 					</mdui-button>

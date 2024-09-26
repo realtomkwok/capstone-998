@@ -76,10 +76,9 @@ const Main = () => {
 	const ChatCard: React.FC<
 		React.HTMLAttributes<HTMLDivElement> & {
 			url: string;
-			input: string;
 			output: LLMResponse;
 		}
-	> = ({ url, input, output }) => {
+	> = ({ url, output }) => {
 		return (
 			<mdui-card
 				variant="filled"
@@ -88,7 +87,7 @@ const Main = () => {
 			>
 				<div
 					className={'w-full p-4 flex flex-col gap-4'}
-					role="generic"
+					// role="generic"
 				>
 					<div className="flex flex-col gap-2 w-full" role="heading">
 						<div className="flex flex-row typo-body-large text-on-surface-variant gap-2 items-center w-full overflow-hidden overflow-ellipsis">
@@ -150,7 +149,6 @@ const Main = () => {
 					<ChatCard
 						key={chat.id}
 						url={url || ''}
-						input={chat.input || ''}
 						output={chat.output!}
 						aria-label="Chat"
 					/>
@@ -158,41 +156,6 @@ const Main = () => {
 			</div>
 		);
 	};
-
-	// TODO: Send a chat message to the chat list
-	// async function sendChat(input: string) {
-	// 	const fetchResponse = async (input: string): Promise<LLMResponse> => {
-	// 		// TODO: Replace `startLLM` with `getAnswerFromLLM` with chat history support: https://js.langchain.com/v0.2/docs/how_to/qa_chat_history_how_to/
-	// 		try {
-	// 			return await startLLM(input, llmProvider);
-	// 		} catch (error) {
-	// 			console.error('Error fetching response', error);
-	// 			return {
-	// 				answer: "I'm sorry, I couldn't find an answer for that.",
-	// 			};
-	// 		}
-	// 	};
-
-	// 	if (input != '' && currentUrl) {
-	// 		setInput('');
-	// 		setIsLoading(true);
-	// 		const output = await fetchResponse(input);
-	// 		setChats((prevChats) => ({
-	// 			...prevChats,
-	// 			[currentUrl]: [
-	// 				...(prevChats[currentUrl] || []),
-	// 				{
-	// 					id: Date.now().toString(),
-	// 					input: input,
-	// 					output: output,
-	// 				},
-	// 			],
-	// 		}));
-	// 		setIsLoading(false);
-	// 	} else {
-	// 		alert('Please enter a valid URL');
-	// 	}
-	// }
 
 	const BottomAppBar = () => {
 		return (
@@ -210,8 +173,6 @@ const Main = () => {
 
 	return (
 		<mdui-layout-main>
-			{/* <div className="m-4">
-				</div> */}
 			<ChatsWrapper chats={chats} url={currentUrl} />
 		</mdui-layout-main>
 	);

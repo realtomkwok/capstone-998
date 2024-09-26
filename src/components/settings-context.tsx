@@ -27,12 +27,12 @@ interface SettingsContextProps {
 export const SettingsContext = createContext<SettingsContextProps | undefined>(undefined);
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [llmProvider, setLlmProvider] = useState<LLMProvider>('openai');
-  const [apiKey, setApiKey] = useState<string>('');
+  const [llmProvider, setLlmProvider] = useState<LLMProvider>(localStorage.getItem('llmProvider') as LLMProvider || 'openai');
+  const [apiKey, setApiKey] = useState<string>(localStorage.getItem('apiKey') as string || '');
   const [isValidatingApiKey, setIsValidatingApiKey] = useState<boolean>(false);
   const [isTypingApiKey, setIsTypingApiKey] = useState<boolean>(false);
-  const [speechLanguage, setSpeechLanguage] = useState<SpeechLanguage>('en-US');
-  const [speechRate, setSpeechRate] = useState<number>(1);
+  const [speechLanguage, setSpeechLanguage] = useState<SpeechLanguage>(localStorage.getItem('speechLanguage') as SpeechLanguage || 'en-US');
+  const [speechRate, setSpeechRate] = useState<number>(localStorage.getItem('speechRate') ? parseInt(localStorage.getItem('speechRate')!) : 1);
   const [speechVoice, setSpeechVoice] = useState<SpeechSynthesisVoice | null>(null);
 
   // Load settings from local storage on component mount
