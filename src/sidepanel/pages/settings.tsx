@@ -14,6 +14,7 @@ import AccessibleButtonIcon from '@components/accessible/ButtonIcon';
 import AccessibleNavigationDrawer from '@components/accessible/NavigationDrawer';
 import { NavigationDrawer } from 'mdui';
 import { LLM_PROVIDERS, PREFERENCES_DRAWER } from '@lib/accessible-labels';
+import { clearCachedResponse, clearProcessedUrls } from '@lib/helper';
 
 /**
  * Settings Modal Component
@@ -320,6 +321,16 @@ export const SettingsModal: React.FC<{
 						onClick={handlePlayGreeting}
 					>
 						{isPlaying ? 'Pause' : 'Play'}
+					</mdui-button>
+					<mdui-button
+						style={{ margin: '0.5em' }}
+						full-width
+						icon="delete"
+						variant="text"
+						color="error"
+						onClick={clearProcessedUrls}
+					>
+						Clear Processed URLs
 					</mdui-button>
 				</div>
 			</mdui-list>

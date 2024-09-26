@@ -6,12 +6,8 @@
 // Prevent the same URL from being processed multiple times
 
 import { startLLM } from './lib/helper';
-
+import { urlPattern } from './lib/helper';
 let processedUrls = {};
-
-let urlPattern = new RegExp(
-	'^(https?:\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)$'
-);
 
 // Allows users to open the side panel by clicking on the action toolbar icon
 chrome.sidePanel

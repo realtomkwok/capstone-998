@@ -1,19 +1,19 @@
 import {
-    MarkdownTextSplitter,
-    RecursiveCharacterTextSplitter,
-} from "@langchain/textsplitters"
-import { Document } from "@langchain/core/documents"
-import { ChatOpenAI, OpenAI, OpenAIEmbeddings } from "@langchain/openai"
-import { ChatAnthropic } from "@langchain/anthropic"
-import { MemoryVectorStore } from "langchain/vectorstores/memory"
-import FirecrawlApp, { ScrapeResponse } from "@mendable/firecrawl-js"
-import { z } from "zod"
-import { StructuredOutputParser } from "langchain/output_parsers"
-import { RunnableSequence } from "@langchain/core/runnables"
-import { ChatPromptTemplate } from "@langchain/core/prompts"
-import { ASSISTANT_MSG, INIT_PROMPT, SYSTEM_MSG, USER_MSG } from "@lib/prompts"
-import { LLMProvider, ScrapePageData, LLMResponse } from "@lib/interface"
-import { OUTPUT_SCHEMES } from "./response-format"
+	MarkdownTextSplitter,
+	RecursiveCharacterTextSplitter,
+} from '@langchain/textsplitters';
+import { Document } from '@langchain/core/documents';
+import { ChatOpenAI, OpenAI, OpenAIEmbeddings } from '@langchain/openai';
+import { ChatAnthropic } from '@langchain/anthropic';
+import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+import FirecrawlApp, { ScrapeResponse } from '@mendable/firecrawl-js';
+import { z } from 'zod';
+import { StructuredOutputParser } from 'langchain/output_parsers';
+import { RunnableSequence } from '@langchain/core/runnables';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { ASSISTANT_MSG, INIT_PROMPT, SYSTEM_MSG, USER_MSG } from '@lib/prompts';
+import { LLMProvider, ScrapePageData, LLMResponse } from '@lib/interface';
+import { OUTPUT_SCHEMES } from './response-format';
 
 /**
  * Loads and scrapes the content of a given URL using FirecrawlApp.
@@ -22,46 +22,45 @@ import { OUTPUT_SCHEMES } from "./response-format"
  */
 
 export async function loadUrl(url: string): Promise<ScrapePageData> {
-    // TODO: Use another webpage loader if FirecrawlApp is not available: https://js.langchain.com/v0.1/docs/integrations/document_loaders/web_loaders/web_playwright/
-    
-    // Log the URL being loaded
-    console.log(`Starting to load URL: ${url}`)
-    
-    const crawlLoader: FirecrawlApp = new FirecrawlApp({
-        apiKey: process.env.FIRECRAWL_API_KEY,
-    })
-    
-    try {
-        const scrapeResponse: ScrapeResponse = await crawlLoader
-            .scrapeUrl(url, {
-                pageOptions: {
-                    includeHtml: true,
-                    replaceAllPathsWithAbsolutePaths: true,
-                    fullPageScreenshot: true,
-                    waitFor: 500,
-                },
-            })
-            .catch((error) => {
-                console.error(error)
-                throw error
-            })
-        
-        console.log(`URL loaded: ${url}`)
-        console.log(scrapeResponse.data)
-        
-        return {
-            content: scrapeResponse.data.content,
-            markdown: scrapeResponse.data.markdown,
-            html: scrapeResponse.data.html,
-            linksOnPage: scrapeResponse.data.linksOnPage,
-            metadata: scrapeResponse.data.metadata,
-            screenshot: scrapeResponse.data.screenshot,
-        }
-        
-    } catch (error) {
-        console.error(`Error loading URL: ${url}`, error)
-        throw error
-    }
+	// TODO: Use another webpage loader if FirecrawlApp is not available: https://js.langchain.com/v0.1/docs/integrations/document_loaders/web_loaders/web_playwright/
+
+	// Log the URL being loaded
+	console.log(`Starting to load URL: ${url}`);
+
+	const crawlLoader: FirecrawlApp = new FirecrawlApp({
+		apiKey: process.env.FIRECRAWL_API_KEY,
+	});
+
+	try {
+		const scrapeResponse: ScrapeResponse = await crawlLoader
+			.scrapeUrl(url, {
+				pageOptions: {
+					includeHtml: true,
+					replaceAllPathsWithAbsolutePaths: true,
+					fullPageScreenshot: true,
+					waitFor: 500,
+				},
+			})
+			.catch((error) => {
+				console.error(error);
+				throw error;
+			});
+
+		console.log(`URL loaded: ${url}`);
+		console.log(scrapeResponse.data);
+
+		return {
+			content: scrapeResponse.data.content,
+			markdown: scrapeResponse.data.markdown,
+			html: scrapeResponse.data.html,
+			linksOnPage: scrapeResponse.data.linksOnPage,
+			metadata: scrapeResponse.data.metadata,
+			screenshot: scrapeResponse.data.screenshot,
+		};
+	} catch (error) {
+		console.error(`Error loading URL: ${url}`, error);
+		throw error;
+	}
 }
 
 /**
@@ -74,42 +73,44 @@ export async function loadUrl(url: string): Promise<ScrapePageData> {
  */
 
 export async function splitDocument(
-    rawHtml: string,
-    rawMarkdown: string,
-    chunkSize: number,
-    chunkOverlap: number,
+	rawHtml: string,
+	rawMarkdown: string,
+	chunkSize: number,
+	chunkOverlap: number
 ) {
-    try {
-        console.log("Starting document splitting process")
-        
-        const htmlSplitter = new RecursiveCharacterTextSplitter({
-            chunkSize: chunkSize,
-            chunkOverlap: chunkOverlap,
-        })
-        
-        const markdownSplitter = new MarkdownTextSplitter({
-            chunkSize: chunkSize,
-            chunkOverlap: chunkOverlap,
-        })
-        
-        console.log("Splitting HTML document")
-        const htmlDocuments = await htmlSplitter.createDocuments([rawHtml])
-        console.log(`HTML document split into ${htmlDocuments.length} chunks`)
-        
-        console.log("Splitting Markdown document")
-        const markdownDocuments = await markdownSplitter.createDocuments([
-            rawMarkdown,
-        ])
-        console.log(`Markdown document split into ${markdownDocuments.length} chunks`)
-        
-        const combinedDocuments = [...htmlDocuments, ...markdownDocuments]
-        console.log(`Total chunks created: ${combinedDocuments.length}`)
-        
-        return combinedDocuments
-    } catch (error) {
-        console.error("Error in splitDocument function:", error)
-        throw new Error("Failed to split document: " + error)
-    }
+	try {
+		console.log('Starting document splitting process');
+
+		const htmlSplitter = new RecursiveCharacterTextSplitter({
+			chunkSize: chunkSize,
+			chunkOverlap: chunkOverlap,
+		});
+
+		const markdownSplitter = new MarkdownTextSplitter({
+			chunkSize: chunkSize,
+			chunkOverlap: chunkOverlap,
+		});
+
+		console.log('Splitting HTML document');
+		const htmlDocuments = await htmlSplitter.createDocuments([rawHtml]);
+		console.log(`HTML document split into ${htmlDocuments.length} chunks`);
+
+		console.log('Splitting Markdown document');
+		const markdownDocuments = await markdownSplitter.createDocuments([
+			rawMarkdown,
+		]);
+		console.log(
+			`Markdown document split into ${markdownDocuments.length} chunks`
+		);
+
+		const combinedDocuments = [...htmlDocuments, ...markdownDocuments];
+		console.log(`Total chunks created: ${combinedDocuments.length}`);
+
+		return combinedDocuments;
+	} catch (error) {
+		console.error('Error in splitDocument function:', error);
+		throw new Error('Failed to split document: ' + error);
+	}
 }
 
 /**
@@ -118,28 +119,30 @@ export async function splitDocument(
  * @returns A retriever object for querying the embedded documents
  */
 
-export async function embedDocuments(
-    chunks: Document[],
-) {
-    try {
-        console.log("Starting document embedding process")
-        const embedding = new OpenAIEmbeddings({openAIApiKey: process.env.OPENAI_API_KEY})
-        console.log("Created OpenAIEmbeddings instance")
-        
-        const VectorStore = await MemoryVectorStore.fromDocuments(
-            chunks,
-            embedding,
-        )
-        console.log(`Successfully embedded ${chunks.length} documents into MemoryVectorStore`)
-        
-        const retriever = VectorStore.asRetriever()
-        console.log("Created retriever from VectorStore")
-        
-        return retriever
-    } catch (error) {
-        console.error("Error in embedDocuments function:", error)
-        throw new Error("Failed to embed documents: " + error)
-    }
+export async function embedDocuments(chunks: Document[]) {
+	try {
+		console.log('Starting document embedding process');
+		const embedding = new OpenAIEmbeddings({
+			openAIApiKey: process.env.OPENAI_API_KEY,
+		});
+		console.log('Created OpenAIEmbeddings instance');
+
+		const VectorStore = await MemoryVectorStore.fromDocuments(
+			chunks,
+			embedding
+		);
+		console.log(
+			`Successfully embedded ${chunks.length} documents into MemoryVectorStore`
+		);
+
+		const retriever = VectorStore.asRetriever();
+		console.log('Created retriever from VectorStore');
+
+		return retriever;
+	} catch (error) {
+		console.error('Error in embedDocuments function:', error);
+		throw new Error('Failed to embed documents: ' + error);
+	}
 }
 
 /**
@@ -148,9 +151,9 @@ export async function embedDocuments(
  * @returns An object containing the document chain and format instructions for the structured output
  */
 export async function createDocumentChain(
-    provider: LLMProvider,
-    modelName?: string,
-    apiKey?: string
+	provider: LLMProvider,
+	modelName?: string,
+	apiKey?: string
 ) {
 	try {
 		// console.log(`Creating document chain for provider: ${provider}`);
@@ -161,7 +164,7 @@ export async function createDocumentChain(
 				model = new ChatOpenAI({
 					modelName: modelName || 'gpt-4o-mini',
 					temperature: 0,
-                    apiKey: apiKey || process.env.OPENAI_API_KEY,
+					apiKey: apiKey || process.env.OPENAI_API_KEY,
 				});
 				break;
 			case 'anthropic':
@@ -169,7 +172,7 @@ export async function createDocumentChain(
 				model = new ChatAnthropic({
 					model: modelName || 'claude-3-5-sonnet-20240620',
 					temperature: 0,
-                    apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
+					apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
 				});
 				break;
 		}
@@ -209,65 +212,80 @@ export async function createDocumentChain(
  */
 
 export async function startLLM(
-    url: string,
-    provider: LLMProvider = "openai",
-    chunkSize: number    = 1000,
-    chunkOverlap: number = 200,
-): Promise<LLMResponse> {    
-    try {
-        // Play a sound to indicate that the LLM process has started
-        // console.log(`Starting LLM process for URL: ${url}`)
-        
-        // Load the page
-        const page = await loadUrl(url)
-        // console.log("Page loaded successfully")
-        const rawMarkdown = page.markdown
-        // const rawHtml = page.html
-        
-        // // Preprocess the document
-        // console.log("Preprocessing document...")
-        // const chunks = await splitDocument(
-        //     rawHtml,
-        //     rawMarkdown,
-        //     chunkSize,
-        //     chunkOverlap,
-        // )
-        // console.log(`Document split into ${chunks.length} chunks`)
-        //
-        // const retriever = await embedDocuments(chunks)
-        // console.log(`Document chunks: ${chunks.length} embedded into retriever`)
-        
-        const { chain, formatInstructions } = await createDocumentChain(provider)
-        // console.log("Document chain created")
-        
-        // console.log("Invoking chain...")
-        const response = await chain.invoke({
-            context: rawMarkdown,
-            question: '',
-            format_instructions: formatInstructions,
-        })
-        // console.log("Chain invoked successfully")
-        console.log("LLM Response:", response)
-        
-        return response as LLMResponse
-        
-    } catch (error) {
-        console.error("Error in startLLMProcess:", error)
-        throw new Error(`Failed to process LLM request: ${error}`)
-    } finally {
-        // if (typeof window !== 'undefined' && window.Audio) {
-        //     new Audio('/public/sounds/cheers.wav').play()
-        //     .catch(error => console.error('Error playing sound:', error))
-        // }
-    }
+	url: string,
+	provider: LLMProvider = 'openai',
+	chunkSize: number = 1000,
+	chunkOverlap: number = 200
+): Promise<LLMResponse> {
+	const cachedPageKey = `scraped-page-${url}`;
+	const cachedLLMResponseKey = `llm-response-${url}`;
+	const CACHE_EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
+
+	try {
+		// Play a sound to indicate that the LLM process has started
+		// console.log(`Starting LLM process for URL: ${url}`)
+
+		// Check if the page is cached
+		const cachedPage = localStorage.getItem(cachedPageKey);
+		let page: ScrapePageData;
+
+		if (cachedPage) {
+			const { data, timestamp } = JSON.parse(cachedPage);
+			if (Date.now() - timestamp < CACHE_EXPIRATION) {
+				return data as LLMResponse;
+			}
+		}
+
+		// If the code reaches here, the cached page is expired or not cached
+		page = await loadUrl(url);
+		localStorage.setItem(
+			cachedPageKey,
+			JSON.stringify(page as ScrapePageData)
+		);
+
+		// Check if LLM response is cached
+		const cachedResponse = localStorage.getItem(cachedLLMResponseKey);
+		if (cachedResponse) {
+			const { data, timestamp } = JSON.parse(cachedResponse);
+			if (Date.now() - timestamp < CACHE_EXPIRATION) {
+				return data as LLMResponse;
+			}
+		}
+
+		// If the code reaches here, the cached response is expired or not cached
+		const { chain, formatInstructions } = await createDocumentChain(
+			provider
+		);
+
+		const response = await chain.invoke({
+			context: page.markdown,
+			question: '',
+			format_instructions: formatInstructions,
+		});
+
+		// Cache the response
+		localStorage.setItem(
+			cachedLLMResponseKey,
+			JSON.stringify({
+				url: url,
+				data: response,
+				timestamp: Date.now(),
+			})
+		);
+
+		return response as LLMResponse;
+	} catch (error) {
+		console.error('Error in startLLMProcess:', error);
+		throw new Error(`Failed to process LLM request: ${error}`);
+	} finally {
+		// if (typeof window !== 'undefined' && window.Audio) {
+		//     new Audio('/public/sounds/cheers.wav').play()
+		//     .catch(error => console.error('Error playing sound:', error))
+		// }
+	}
 }
 
 // TODO: Implement the following-up context function
-// export async function getAnswerFromLLM(input: string, provider: LLMProvider) {
-//     const urlPattern = new RegExp(
-//         "^(https?|ftp)://[a-zA-Z0-9-.]+.[a-zA-Z]{2,}(:[0-9]{2,})?(/.*)?$",
-//     )
-// }
 
 /**
  * Reads out the given text using the browser's speech synthesis API.
@@ -278,26 +296,30 @@ export async function startLLM(
  * TODO: Try another TTS engine if the browser's API is not available
  */
 
-export function readText(text: string, language: string = "en-US", rate: number = 1, speechVoice: SpeechSynthesisVoice) {
-    const speech = new SpeechSynthesisUtterance(text)
-    speech.lang = language  // Set the language as needed
-    // speech.pitch = pitch    // Set the pitch
-    speech.rate = rate      // Set the rate
-    speech.voice = speechVoice
-    window.speechSynthesis.speak(speech)
+export function readText(
+	text: string,
+	language: string = 'en-US',
+	rate: number = 1,
+	speechVoice: SpeechSynthesisVoice
+) {
+	const speech = new SpeechSynthesisUtterance(text);
+	speech.lang = language; // Set the language as needed
+	// speech.pitch = pitch    // Set the pitch
+	speech.rate = rate; // Set the rate
+	speech.voice = speechVoice;
+	window.speechSynthesis.speak(speech);
 }
 
-
 export function downloadResponse(
-    content: string,
-    fileName: string,
-    contentType: string
+	content: string,
+	fileName: string,
+	contentType: string
 ) {
-    let a = document.createElement("a")
-    let file = new Blob([content], { type: contentType })
-    a.href = URL.createObjectURL(file)
-    a.download = fileName
-    a.click()
+	let a = document.createElement('a');
+	let file = new Blob([content], { type: contentType });
+	a.href = URL.createObjectURL(file);
+	a.download = fileName;
+	a.click();
 }
 
 export const urlPattern = new RegExp(
@@ -309,3 +331,23 @@ export const urlPattern = new RegExp(
 		'(\\#[-a-z\\d_]*)?$',
 	'i'
 );
+
+export const clearProcessedUrls = () => {
+    // Clear processedUrls from chrome.storage.local
+    chrome.storage.local.remove('processedUrls', () => {
+        console.log('Cleared processedUrls from chrome.storage.local');
+    });
+
+    console.log('Cache cleared');
+    console.log(localStorage.getItem('processedUrls'))
+};
+
+export const clearCachedPage = (url: string) => {
+    localStorage.removeItem(`scraped-page-${url}`)
+    console.log(`Cleared cached page for ${url}`)
+}
+
+export const clearCachedResponse = (url: string) => {
+    localStorage.removeItem(`llm-response-${url}`)
+    console.log(`Cleared cached response for ${url}`)
+}
