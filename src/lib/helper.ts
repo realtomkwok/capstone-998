@@ -1,20 +1,21 @@
-import {
-	MarkdownTextSplitter,
-	RecursiveCharacterTextSplitter,
-} from '@langchain/textsplitters';
-import { Document } from '@langchain/core/documents';
-import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
+import { ChatOpenAI } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
-import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 import FirecrawlApp, { ScrapeResponse } from '@mendable/firecrawl-js';
-import { z } from 'zod';
-import { StructuredOutputParser } from 'langchain/output_parsers';
-import { RunnableSequence } from '@langchain/core/runnables';
+import { StructuredOutputParser } from '@langchain/core/output_parsers';
+import {
+	RunnableSequence,
+} from '@langchain/core/runnables';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { ASSISTANT_MSG, SYSTEM_MSG, USER_MSG } from '@lib/prompts';
-import { LLMProvider, ScrapePageData, LLMResponse } from "@lib/interface"
+import {
+	ScrapePageData,
+	LLMResponse,
+	SpeechLanguage,
+} from '@lib/interface';
 import { OUTPUT_SCHEMES } from './response-format';
-import { getStorage } from "@lib/storage"
+import { getStorage } from '@lib/storage';
+import { LangChainTracer } from '@langchain/core/tracers/tracer_langchain';
+import { Client } from 'langsmith';
 
 /**
  * Loads and scrapes the content of a given URL using FirecrawlApp.
@@ -60,188 +61,78 @@ export async function loadUrl(url: string): Promise<ScrapePageData> {
 }
 
 /**
- * Splits the retrieved Markdown document into smaller chunks.
- * @param rawHtml The raw HTML content of the document
- * @param rawMarkdown The raw Markdown content of the document
- * @param chunkSize The size of each chunk
- * @param chunkOverlap The overlap between chunks
- * @returns An array of Document objects representing the chunks
- */
-
-export async function splitDocument(
-	rawHtml: string,
-	rawMarkdown: string,
-	chunkSize: number,
-	chunkOverlap: number
-) {
-	try {
-		console.log('Starting document splitting process');
-
-		const htmlSplitter = new RecursiveCharacterTextSplitter({
-			chunkSize: chunkSize,
-			chunkOverlap: chunkOverlap,
-		});
-
-		const markdownSplitter = new MarkdownTextSplitter({
-			chunkSize: chunkSize,
-			chunkOverlap: chunkOverlap,
-		});
-
-		console.log('Splitting HTML document');
-		const htmlDocuments = await htmlSplitter.createDocuments([rawHtml]);
-		console.log(`HTML document split into ${htmlDocuments.length} chunks`);
-
-		console.log('Splitting Markdown document');
-		const markdownDocuments = await markdownSplitter.createDocuments([
-			rawMarkdown,
-		]);
-		console.log(
-			`Markdown document split into ${markdownDocuments.length} chunks`
-		);
-
-		const combinedDocuments = [...htmlDocuments, ...markdownDocuments];
-		console.log(`Total chunks created: ${combinedDocuments.length}`);
-
-		return combinedDocuments;
-	} catch (error) {
-		throw new Error('Failed to split document: ' + error);
-	}
-}
-
-/**
- * Embeds documents into a vector store for efficient retrieval.
- * @param chunks An array of Document objects to embed
- * @returns A retriever object for querying the embedded documents
- */
-
-export async function embedDocuments(chunks: Document[]) {
-	try {
-		console.log('Starting document embedding process');
-		const embedding = new OpenAIEmbeddings({
-			openAIApiKey: process.env.OPENAI_API_KEY,
-		});
-		console.log('Created OpenAIEmbeddings instance');
-
-		const VectorStore = await MemoryVectorStore.fromDocuments(
-			chunks,
-			embedding
-		);
-		console.log(
-			`Successfully embedded ${chunks.length} documents into MemoryVectorStore`
-		);
-
-		const retriever = VectorStore.asRetriever();
-		console.log('Created retriever from VectorStore');
-
-		return retriever;
-	} catch (error) {
-		throw new Error('Failed to embed documents: ' + error);
-	}
-}
-
-/**
- * Creates a document chain for summarizing and extracting key content from a given context.
- * @param provider The language model provider to use: Open AI or Anthropic Claude
- * @param modelName
- * @param apiKey
- * @returns An object containing the document chain and format instructions for the structured output
- */
-export async function createDocumentChain(
-	provider: LLMProvider,
-	modelName?: string,
-	apiKey?: string
-) {
-	try {
-		// console.log(`Creating document chain for provider: ${provider}`);
-		let model;
-		switch (provider) {
-			case 'openai':
-				// console.log('Initializing OpenAI model');
-				model = new ChatOpenAI({
-					modelName: modelName || 'gpt-4o-mini',
-					temperature: 0,
-					apiKey: apiKey || process.env.OPENAI_API_KEY,
-				});
-				break;
-			case 'anthropic':
-				// console.log('Initializing Anthropic model');
-				model = new ChatAnthropic({
-					model: modelName || 'claude-3-5-sonnet-20240620',
-					temperature: 0,
-					apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
-				});
-				break;
-		}
-
-		const outputSchema: z.ZodObject<any, any> = OUTPUT_SCHEMES('news');
-
-		const parser = StructuredOutputParser.fromZodSchema(outputSchema);
-
-		console.log('Creating runnable sequence');
-		const chain = RunnableSequence.from([
-			ChatPromptTemplate.fromMessages([
-				['system', SYSTEM_MSG],
-				['assistant', ASSISTANT_MSG],
-				['user', USER_MSG],
-			]),
-			model,
-			parser,
-		]);
-
-		const formatInstructions = parser.getFormatInstructions();
-
-		// console.log('Document chain created successfully');
-		return { chain, formatInstructions };
-	} catch (error) {
-		throw new Error(`Failed to create document chain: ${error}`);
-	}
-}
-
-/**
  * Starts the scraping process by loading a URL and caching the result. Intended for background processing when the user visits a page.
  * @param url The URL to load and scrape
  * @returns An object containing the scraped content, metadata, and links on the page
  */
 
 export async function startScrapePage(url: string): Promise<ScrapePageData> {
-	const storage = getStorage()
+	const storage = getStorage();
 	const cachedPageKey = `scraped-page-${url}`;
 	const CACHE_EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
-	
-		const cachedPage = await storage.getItem(cachedPageKey);
-		if (cachedPage?.timestamp && Date.now() - cachedPage.timestamp < CACHE_EXPIRATION) {
-			return cachedPage.data;
+
+	const cachedPage = await storage.getItem(cachedPageKey);
+	if (
+		cachedPage?.timestamp &&
+		Date.now() - cachedPage.timestamp < CACHE_EXPIRATION
+	) {
+		return cachedPage.data;
 	} else {
 		const page = await loadUrl(url);
 		await storage.setItem(cachedPageKey, {
 			data: page,
-			timestamp: Date.now()
-		})
-		return page
+			timestamp: Date.now(),
+		});
+		return page;
 	}
 }
-
 /**
  * Starts the LLM pipeline process by loading a URL, splitting the document, embedding the chunks, and creating a document chain. Intended for background processing when the user visits a page.
  * @param url The URL to load and process
- * @param provider The language model provider to use. Default is OpenAI. Supported providers: 'openai', 'anthropic'
+ * @param question The user's question
  * @return The response from the LLM pipeline
  */
 
-export async function startLLM(
-	url: string,
-	provider: LLMProvider = 'openai',
-): Promise<LLMResponse> {
+export async function startLLM(url: string, question: string): Promise<LLMResponse> {
 	// TODO: Play a sound to indicate that the LLM process has started
+	const storage = getStorage();
+	const llmProvider = (await storage.getItem('llmProvider')) || 'openai';
+	const apiKey = (await storage.getItem('apiKey')) as string;
+	
+	const callback = [
+			new LangChainTracer({
+					projectName: process.env.LANGCHAIN_PROJECT,
+					client: new Client({ apiUrl: process.env.LANGCHAIN_ENDPOINT, apiKey: process.env.LANGCHAIN_API_KEY }),
+			})
+	]
+
+	const model =
+		llmProvider === 'openai'
+			? new ChatOpenAI({ modelName: 'gpt-4o-mini', apiKey: apiKey || process.env.OPENAI_API_KEY })
+			: new ChatAnthropic({ model: 'claude-3-5-sonnet-20240620', apiKey: apiKey || process.env.ANTHROPIC_API_KEY });
+
+	const outputSchema = OUTPUT_SCHEMES();
+	const outputParser = StructuredOutputParser.fromZodSchema(outputSchema);
+
+	// TODO: Add parallel processing for summarization and key content extraction
 	return startScrapePage(url).then(async (page) => {
-		const { chain, formatInstructions } = await createDocumentChain(
-			provider
+
+		const prompt = ChatPromptTemplate.fromMessages([
+			["system", SYSTEM_MSG],
+			["assistant", ASSISTANT_MSG],
+			["user", USER_MSG],
+		]);
+
+		const chain = RunnableSequence.from([prompt, model, outputParser]);
+		
+		const response = await chain.invoke(
+			{
+				context: page.markdown,
+				question: question,
+				format_instructions: outputParser.getFormatInstructions(),
+			},
+			{ callbacks: callback}
 		);
-		const response = await chain.invoke({
-			context: page.markdown,
-			question: '',
-			format_instructions: formatInstructions,
-		});
 
 		return response as LLMResponse;
 	});
@@ -252,24 +143,37 @@ export async function startLLM(
 /**
  * Reads out the given text using the browser's speech synthesis API.
  * @param text The text to read
- * @param language The language to use for speech synthesis
- * @param rate The rate of speech
- * TODO: Try another TTS engine if the browser's API is not available
- * @param speechVoice
+ * @todo Try another TTS engine if the browser's API is not available
  */
 
-export function readText(
-	text: string,
-	language: string = 'en-US',
-	rate: number = 1,
-	speechVoice: SpeechSynthesisVoice
-) {
+export async function readText(text: string) {
+	const storage = getStorage();
+
 	const speech = new SpeechSynthesisUtterance(text);
-	speech.lang = language; // Set the language as needed
-	// speech.pitch = pitch    // Set the pitch
-	speech.rate = rate; // Set the rate
-	speech.voice = speechVoice;
-	window.speechSynthesis.speak(speech);
+
+	try {
+		const language = (await storage.getItem(
+			'speechLanguage'
+		)) as SpeechLanguage;
+		const rate = (await storage.getItem('speechRate')) as number;
+		const voice = (await storage.getItem(
+			'speechVoice'
+		)) as SpeechSynthesisVoice;
+
+		console.log(
+			`Retrieved speech settings: language: ${language}, rate: ${rate}, voice: ${voice}`
+		);
+
+		speech.lang = language;
+		speech.rate = rate;
+		speech.voice = voice;
+
+		speechSynthesis.speak(speech);
+	} catch (error) {
+		console.error('Error retrieving speech settings:', error);
+		// Fallback to default settings if there's an error
+		speechSynthesis.speak(speech);
+	}
 }
 
 export function downloadResponse(
@@ -295,21 +199,21 @@ export const urlPattern = new RegExp(
 );
 
 export const clearProcessedUrls = () => {
-    // Clear processedUrls from chrome.storage.local
-    chrome.storage.local.remove('processedUrls', () => {
-        console.log('Cleared processedUrls from chrome.storage.local');
-    });
+	// Clear processedUrls from chrome.storage.local
+	chrome.storage.local.remove('processedUrls', () => {
+		console.log('Cleared processedUrls from chrome.storage.local');
+	});
 
-    console.log('Cache cleared');
-    console.log(localStorage.getItem('processedUrls'))
+	console.log('Cache cleared');
+	console.log(localStorage.getItem('processedUrls'));
 };
 
 export const clearCachedPage = (url: string) => {
-    localStorage.removeItem(`scraped-page-${url}`)
-    console.log(`Cleared cached page for ${url}`)
-}
+	localStorage.removeItem(`scraped-page-${url}`);
+	console.log(`Cleared cached page for ${url}`);
+};
 
 export const clearCachedResponse = (url: string) => {
-    localStorage.removeItem(`llm-response-${url}`)
-    console.log(`Cleared cached response for ${url}`)
-}
+	localStorage.removeItem(`llm-response-${url}`);
+	console.log(`Cleared cached response for ${url}`);
+};
