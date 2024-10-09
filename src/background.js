@@ -5,9 +5,12 @@
 // The content should be refreshed when the tab is changed
 // Prevent the same URL from being processed multiple times
 
-import { startLLM } from './lib/helper';
-import { urlPattern } from './lib/helper';
+import { startLLM, urlPattern} from './lib/helper';
+import { INIT_PROMPT } from "./lib/prompts"
+import { getStorage } from './lib/storage';
+
 let processedUrls = {};
+const storage = getStorage();
 
 // Allows users to open the side panel by clicking on the action toolbar icon
 chrome.sidePanel
@@ -15,8 +18,7 @@ chrome.sidePanel
 	.catch((error) => console.error(error));
 
 // Initialize processedUrls from storage
-chrome.storage.local.get('processedUrls', (result) => {
-	processedUrls = result.processedUrls || {};
+await storage.setItem('processedUrls', {}).then(() => {
 	console.log('Initialized processedUrls:', processedUrls);
 });
 
@@ -77,19 +79,16 @@ async function handleNewUrl(url) {
 		});
 
 	try {
-		console.log('Starting LLM');
-		const response = await startLLM(url, 'openai');
+		const response = await startLLM(url, INIT_PROMPT);
 		processedUrls[url] = response;
-		// TODO: Store processedUrls only when the response is successfully processed
-//		chrome.storage.local.set({ processedUrls: processedUrls }, () => {
-//			console.log('Stored processedUrls:', processedUrls);
-//		});
 		await chrome.runtime.sendMessage({
 			type: 'UPDATE_RESPONSE',
 			response: response,
 			url: url,
 		});
-		console.log('LLM completed and response sent to sidepanel already.');
+		chrome.storage.local.set({ processedUrls: processedUrls }, () => {
+			console.log('Stored processedUrls:', processedUrls);
+		});
 	} catch (error) {
 		console.error('Error handling new URL:', error);
 	}

@@ -7,6 +7,7 @@ const webpack = require('webpack');
 const common = require('./webpack.common.js');
 const PATHS = require('./paths');
 const { TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin');
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
 // Merge webpack configuration files
 const config = (env, argv) =>
@@ -15,6 +16,13 @@ const config = (env, argv) =>
 			sidepanel: PATHS.src + '/index.tsx',
 			background: PATHS.src + '/background.js',
 		},
+		plugins: [
+			new Dotenv(),
+			new webpack.ProvidePlugin({
+				process: 'process/browser.js',
+			}),
+			new NodePolyfillPlugin()
+		],
 		resolve: {
 			fallback: {
 				'path': require.resolve('path-browserify'),
@@ -23,17 +31,11 @@ const config = (env, argv) =>
 				'buffer': require.resolve('buffer/'),
 				'stream': require.resolve('stream-browserify'),
 				'node:async_hooks': require.resolve('node:async_hooks'),
+				'process': require.resolve('process/browser'),
 			},
 			plugins: [new TsconfigPathsPlugin({ configFile: './tsconfig.json' })],
 			extensions: ['.tsx', '.ts', '.js'],
 		},
-		plugins: [
-			new Dotenv(),
-			new webpack.ProvidePlugin({
-				process: 'process/browser.js',
-			}),
-
-		],
 		devServer: {
 			header: {
 				'Access-Control-Allow-Origin': '*',

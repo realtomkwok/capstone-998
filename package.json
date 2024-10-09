@@ -1,6 +1,6 @@
 {
 	"name": "clara",
-	"version": "0.4.1",
+	"version": "0.5.0",
 	"description": "Clara is a browser extension that helps visually impaired users navigate the web.",
 	"private": true,
 	"scripts": {
@@ -47,9 +47,9 @@
 	},
 	"dependencies": {
 		"@babel/preset-react": "^7.24.7",
-		"@langchain/anthropic": "^0.2.17",
-		"@langchain/community": "^0.2.27",
-		"@langchain/openai": "^0.2.6",
+		"@langchain/anthropic": "^0.3.3",
+		"@langchain/core": "^0.3.7",
+		"@langchain/openai": "^0.3.5",
 		"@mendable/firecrawl-js": "^0.0.13",
 		"async_hooks": "^1.0.0",
 		"buffer": "^6.0.3",
@@ -58,8 +58,6 @@
 		"dotenv-webpack": "^8.1.0",
 		"html-to-text": "^9.0.5",
 		"jsdom": "^24.1.1",
-		"langchain": "^0.2.16",
-		"langsmith": "^0.1.55",
 		"mdui": "^2.1.2",
 		"node-polyfill-webpack-plugin": "^4.0.0",
 		"os-browserify": "^0.3.0",

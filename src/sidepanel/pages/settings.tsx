@@ -15,6 +15,7 @@ import AccessibleNavigationDrawer from '@components/accessible/NavigationDrawer'
 import { NavigationDrawer, TextField } from "mdui"
 import { LLM_PROVIDERS, PREFERENCES_DRAWER } from '@lib/accessible-labels';
 import { clearProcessedUrls } from '@lib/helper';
+import { getStorage } from "@lib/storage"
 
 /**
  * Settings Modal Component
@@ -29,7 +30,8 @@ export const SettingsModal: React.FC<{
 }> = ({ isOpen, onClose }) => {
 	const navigationDrawerRef = useRef<NavigationDrawer>(null);
 	const speechVoices = speechSynthesis.getVoices();
-
+	const storage = getStorage()
+	
 	const {
 		llmProvider, 
 		setLlmProvider,
@@ -37,8 +39,6 @@ export const SettingsModal: React.FC<{
 		setApiKey,
 		isValidatingApiKey,
 		setIsValidatingApiKey,
-		isTypingApiKey,
-		setIsTypingApiKey,
 		speechLanguage,
 		setSpeechLanguage,
 		speechRate,
@@ -84,7 +84,7 @@ export const SettingsModal: React.FC<{
 				.then((result) => {
 					const textfield = document.getElementById('api-key') as TextField;
 					if (result.isValid) {
-						localStorage.setItem('apiKey', apiKey);
+						storage.setItem('apiKey', apiKey)
 						textfield.helper = result.msg;
 					} else {
 						textfield.setCustomValidity(result.msg);
@@ -131,7 +131,14 @@ export const SettingsModal: React.FC<{
 			playGreeting();
 		}
 	}
-
+	
+	async function handleSpeechVoice(voiceURI: string) {
+			const voice = speechVoices.find((voice) => voice.voiceURI === voiceURI)
+			if (voice) {
+				setSpeechVoice(voice);
+				await storage.setItem('speechVoiceURI', voiceURI)
+			}
+	}
 
 	return (
 		<AccessibleNavigationDrawer
@@ -286,9 +293,9 @@ export const SettingsModal: React.FC<{
 								.map((voice) => (
 									<mdui-menu-item
 										key={voice.name}
-										value={`${voice.name}_${voice.lang}`}
+										value={voice.voiceURI}
 										selected-icon="check"
-										onClick={() => setSpeechVoice(voice)}
+										onClick={() => handleSpeechVoice(voice.voiceURI)}
 									>
 										{voice.name}
 									</mdui-menu-item>

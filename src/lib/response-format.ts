@@ -1,7 +1,7 @@
 import z from 'zod';
 import { ASSISTANT_MSG } from './prompts';
 
-export const OUTPUT_SCHEMES = (websiteType: 'news' | 'general') => {
+export const OUTPUT_SCHEMES = () => {
 	const pageLayout = z.object({
 		description: z
 			.string()
@@ -69,19 +69,10 @@ export const OUTPUT_SCHEMES = (websiteType: 'news' | 'general') => {
 			`A verbal, concise answer to the user\'s question. If the user is not asking a question, summarize the page and follow the examples I gave you: ${ASSISTANT_MSG}`
 		);
 
-	switch (websiteType) {
-		case 'general':
-			return z.object({
-				answer: answer,
-				pageLayout: pageLayout,
-				navigation: navigation,
-			});
-		case 'news':
-			return z.object({
-				answer: answer,
+	return z.object({
+		answer: answer,
 				pageLayout: pageLayout,
 				navigation: navigation,
 				topStories: topStories,
-			});
-	}
+	});
 };
