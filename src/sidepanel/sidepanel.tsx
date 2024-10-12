@@ -23,16 +23,14 @@ const TopAppBar: React.FC<{ onOpenSettings: () => void }> = ({
 			aria-label={TOP_APP_BAR.ariaLabel}
 			aria-description={TOP_APP_BAR.ariaDescription}
 		>
-			<MaterialSymbol
-				symbol="family_star"
-				fill={true}
-				weight={400}
-				grade={200}
-				opticalSize={24}
-				role="presentation"
-				aria-hidden={true}
-				aria-label="Clara logo"
-			/>
+			<div className="flex content-center items-center w-10 h-10">
+				<img
+					src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Woman.png"
+					alt="Woman"
+					width="64"
+					height="64"
+				/>
+			</div>
 			<mdui-top-app-bar-title
 				className="font-semibold"
 				aria-label="Clara"

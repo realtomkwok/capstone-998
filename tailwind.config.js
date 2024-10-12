@@ -3,8 +3,8 @@ module.exports = {
 	content: ['./src/**/*.{ts,tsx,html}'],
 	theme: {
 		fontFamily: {
-			sans: ['Public Sans', 'Circular', 'system-ui', 'sans-serif'],
-			mono: ['Public Sans', 'Circular Mono', 'monospace'],
+			sans: ['Inclusive Sans', 'Circular', 'system-ui', 'sans-serif'],
+			mono: ['Roboto Sans', 'Circular Mono', 'monospace'],
 		},
 		extend: {
 			fontSize: {
@@ -142,6 +142,7 @@ module.exports = {
 		},
 	},
 	plugins: [
+		require('tailwind-clip-path'),
 	],
 };
 

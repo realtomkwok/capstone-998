@@ -1,26 +1,6 @@
 import { AriaRole } from 'react';
 
-export interface LLMResponse {
-	navigation: {
-		description: string;
-		name: string;
-		url: string;
-	}[];
-	answer: string;
-	pageLayout: {
-		description: string;
-		sections: {
-			description: string;
-			name: string;
-		}[];
-	};
-	topStories: {
-		description: string;
-		url: string;
-		title: string;
-		ogTitle: string;
-	}[];
-}
+export type LLMResponse = string
 
 export type LLMProvider = 'openai' | 'anthropic';
 

@@ -21,7 +21,6 @@ const config = (env, argv) =>
 			new webpack.ProvidePlugin({
 				process: 'process/browser.js',
 			}),
-			new NodePolyfillPlugin()
 		],
 		resolve: {
 			fallback: {
@@ -31,7 +30,6 @@ const config = (env, argv) =>
 				'buffer': require.resolve('buffer/'),
 				'stream': require.resolve('stream-browserify'),
 				'node:async_hooks': require.resolve('node:async_hooks'),
-				'process': require.resolve('process/browser'),
 			},
 			plugins: [new TsconfigPathsPlugin({ configFile: './tsconfig.json' })],
 			extensions: ['.tsx', '.ts', '.js'],

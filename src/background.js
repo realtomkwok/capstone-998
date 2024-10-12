@@ -87,7 +87,7 @@ async function handleNewUrl(url) {
 			url: url,
 		});
 		chrome.storage.local.set({ processedUrls: processedUrls }, () => {
-			console.log('Stored processedUrls:', processedUrls);
+			console.log(response);
 		});
 	} catch (error) {
 		console.error('Error handling new URL:', error);

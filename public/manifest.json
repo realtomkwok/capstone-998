@@ -1,11 +1,13 @@
 {
 	"manifest_version": 3,
 	"name": "Clara",
-    "version": "0.4.1",
+    "version": "0.6.0",
     "description": "An AI-powered screen reader for the web",
 	"icons": {
 		"16": "icons/icon_16.png",
+        "19": "icons/icon_19.png",
 		"32": "icons/icon_32.png",
+        "38": "icons/icon_38.png",
 		"48": "icons/icon_48.png",
 		"128": "icons/icon_128.png"
 	},

@@ -1,6 +1,6 @@
 {
 	"name": "clara",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"description": "Clara is a browser extension that helps visually impaired users navigate the web.",
 	"private": true,
 	"scripts": {
@@ -34,6 +34,7 @@
 		"postcss-preset-env": "^10.0.2",
 		"prettier": "^2.8.8",
 		"style-loader": "^4.0.0",
+		"tailwind-clip-path": "^1.0.0",
 		"tailwindcss": "^3.4.10",
 		"ts-jest": "^29.2.5",
 		"ts-loader": "^9.5.1",

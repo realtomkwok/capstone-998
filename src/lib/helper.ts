@@ -1,18 +1,17 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
 import FirecrawlApp, { ScrapeResponse } from '@mendable/firecrawl-js';
-import { StructuredOutputParser } from '@langchain/core/output_parsers';
+import { StringOutputParser } from '@langchain/core/output_parsers';
 import {
 	RunnableSequence,
 } from '@langchain/core/runnables';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { ASSISTANT_MSG, SYSTEM_MSG, USER_MSG } from '@lib/prompts';
+import { SYSTEM_MSG, USER_MSG } from '@lib/prompts';
 import {
 	ScrapePageData,
 	LLMResponse,
 	SpeechLanguage,
 } from '@lib/interface';
-import { OUTPUT_SCHEMES } from './response-format';
 import { getStorage } from '@lib/storage';
 import { LangChainTracer } from '@langchain/core/tracers/tracer_langchain';
 import { Client } from 'langsmith';
@@ -37,6 +36,7 @@ export async function loadUrl(url: string): Promise<ScrapePageData> {
 		const scrapeResponse: ScrapeResponse = await crawlLoader
 			.scrapeUrl(url, {
 				pageOptions: {
+					onlyMainContent: true,
 					includeHtml: true,
 					replaceAllPathsWithAbsolutePaths: true,
 					fullPageScreenshot: true,
@@ -108,28 +108,26 @@ export async function startLLM(url: string, question: string): Promise<LLMRespon
 
 	const model =
 		llmProvider === 'openai'
-			? new ChatOpenAI({ modelName: 'gpt-4o-mini', apiKey: apiKey || process.env.OPENAI_API_KEY })
+			? new ChatOpenAI({ modelName: 'gpt-4o', apiKey: apiKey || process.env.OPENAI_API_KEY })
 			: new ChatAnthropic({ model: 'claude-3-5-sonnet-20240620', apiKey: apiKey || process.env.ANTHROPIC_API_KEY });
 
-	const outputSchema = OUTPUT_SCHEMES();
-	const outputParser = StructuredOutputParser.fromZodSchema(outputSchema);
+	// const outputSchema = OUTPUT_SCHEMES();
+	// const outputParser = StructuredOutputParser.fromZodSchema(outputSchema);
 
 	// TODO: Add parallel processing for summarization and key content extraction
 	return startScrapePage(url).then(async (page) => {
 
 		const prompt = ChatPromptTemplate.fromMessages([
 			["system", SYSTEM_MSG],
-			["assistant", ASSISTANT_MSG],
 			["user", USER_MSG],
 		]);
 
-		const chain = RunnableSequence.from([prompt, model, outputParser]);
+		const chain = RunnableSequence.from([prompt, model, new StringOutputParser()]);
 		
 		const response = await chain.invoke(
 			{
 				context: page.markdown,
 				question: question,
-				format_instructions: outputParser.getFormatInstructions(),
 			},
 			{ callbacks: callback}
 		);
