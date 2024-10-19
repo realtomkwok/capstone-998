@@ -5,10 +5,8 @@ import 'mdui/mdui.css';
 
 import { LLMChat, LLMResponse, MsgBackgroundToSidepanel } from '@lib/interface';
 import React, { useEffect, useContext } from 'react';
-import { readText } from '@lib/helper';
-import { RESPONSES } from '@lib/responses';
+import { readText, startLLM } from '@lib/helper';
 import { SettingsContext } from '@components/settings-context';
-import { MaterialSymbol } from '@components/material-symbol';
 
 const Main = () => {
 	const [chats, setChats] = React.useState<{
@@ -16,13 +14,10 @@ const Main = () => {
 	}>({});
 	const [input, setInput] = React.useState<string>('');
 	const [isLoading, setIsLoading] = React.useState<boolean>(false);
+	const [isPlaying, setIsPlaying] = React.useState<boolean>(false);
 	const [currentUrl, setCurrentUrl] = React.useState<string | undefined>();
 
 	const { speechVoice } = useContext(SettingsContext)!;
-
-	const handleInputChange = React.useCallback((value: string) => {
-		setInput(value);
-	}, []);
 
 	useEffect(() => {
 		// Notify the background script that the sidepanel is ready
@@ -33,13 +28,13 @@ const Main = () => {
 			if (message.url) {
 				if (message.type === 'UPDATE_URL') {
 					setCurrentUrl(message.url);
-					setIsLoading(!chats[message.url]);
 				} else if (message.type === 'UPDATE_RESPONSE') {
 					const updateMessage = message as {
 						type: 'UPDATE_RESPONSE';
 						response: LLMResponse;
 						url: string;
 					};
+					
 					setIsLoading(false);
 
 					// Speak the response if the user has enabled text-to-speech
@@ -79,6 +74,7 @@ const Main = () => {
 	// Handle playing the text-to-speech
 	const handlePlay = (text: string) => {
 		if (speechVoice) {
+			setIsPlaying(!isPlaying);
 			!speechSynthesis.speaking
 				? readText(text)
 				: speechSynthesis.cancel();
@@ -88,85 +84,61 @@ const Main = () => {
 	};
 
 	// Create a new chat card
-	const ChatCard: React.FC<
+	const Chats: React.FC<
 		React.HTMLAttributes<HTMLDivElement> & {
+			input: string | undefined;
 			output: LLMResponse;
 		}
-	> = ({ output }) => {
+	> = ({ input, output }) => {
+		const ChatHeader = ({ chatRole }: { chatRole: string }) => {
+			return (
+				<div className="flex justify-between items-center font-label-large uppercase text-secondary">
+					<span>{chatRole}</span>
+					<mdui-button-icon
+						className="pl-2"
+						icon={isPlaying ? 'pause' : 'volume_up'}
+						onClick={() => handlePlay(output)}
+					/>
+				</div>
+			);
+		};
+
 		return (
-			<div className="flex flex-col gap-2">
-				{/*<div className="flex flex-row items-center">*/}
-				{/*	<MaterialSymbol*/}
-				{/*		symbol="stars"*/}
-				{/*		fill={true}*/}
-				{/*		weight={400}*/}
-				{/*		grade={200}*/}
-				{/*		opticalSize={20}*/}
-				{/*		role="presentation"*/}
-				{/*	/>*/}
-				{/*	<div className="overflow-auto overflow-ellipsis whitespace-nowrap max-w-full">*/}
-				{/*		<span className="typo-label-large uppercase">Summary</span>*/}
-				{/*	</div>*/}
-				{/*</div>*/}
-				<mdui-card
-					variant="elevated"
-					role="region"
-					aria-label="Summary of the current webpage"
-				>
-					<div
-						className={'w-full p-4 flex flex-col gap-4'}
-						// role="generic"
-					>
-						<div
-							className="flex flex-col gap-2 w-full"
-							role="heading"
-						>
-							<div className="flex flex-row typo-body-large text-on-surface-variant gap-2 items-center w-full overflow-hidden overflow-ellipsis"></div>
-							<div
-								className={
-									'typo-headline-small text-on-surface word-break'
-								}
-							>
-								{output || RESPONSES.error.message}
-							</div>
-						</div>
-						<div className={'flex flex-row gap-2 justify-end'}>
-							<mdui-button-icon
-								icon="volume_up"
-								onClick={() => handlePlay(output)}
-							></mdui-button-icon>
+			<div className="flex flex-col gap-4">
+				{input != '' && (
+					<div className="flex flex-col gap-2">
+						<ChatHeader chatRole="me" />
+						<div className="flex flex-col items-start gap-2">
+							<p className="text-body-large text-on-surface-variant">
+								{input}
+							</p>
 						</div>
 					</div>
-				</mdui-card>
+				)}
+				<div className="flex flex-col gap-2">
+					<ChatHeader chatRole="clara" />
+					<div className="flex flex-col items-start gap-2">
+						<p className="text-headline-small text-on-surface-variant">
+							{output}
+						</p>
+					</div>
+				</div>
 			</div>
 		);
 	};
 
-	// Create a wrapper for all chat cards
-	const ChatsWrapper: React.FC<
-		React.HTMLAttributes<HTMLDivElement> & {
-			chats: {
-				[url: string]: LLMChat[];
-			};
-			url: string | undefined;
-		}
-	> = ({ chats, url, ...props }) => {
-		const currentChats = url ? chats[url] || [] : [];
-
-		return (
-			<div className={`flex flex-col gap-8 p-4 h-[calc(100%-80px)] chats-anchor`} role="feed">
-				{currentChats.map((chat) => (
-					<ChatCard
-						key={chat.id}
-						output={chat.output!}
-						aria-label="Chat"
-					/>
-				))}
-			</div>
-		);
-	};
-	
 	const LoadingState: React.FC = () => {
+		useEffect(() => {
+			const audio = new Audio(chrome.runtime.getURL('sounds/thinking.wav'));
+
+			if (isLoading) {
+				audio.play();
+				audio.loop = true;
+			} else {
+				audio.pause();
+			}
+		}, [isLoading]);
+
 		return (
 			<div
 				className="flex-col items-center justify-center gap-4"
@@ -175,17 +147,18 @@ const Main = () => {
 				<img
 					src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Woman%20in%20Lotus%20Position.png"
 					alt="Clara is thinking"
-					className="w-1/2 h-1/2 scale-x-[-1]"
+					className="w-1/2 h-1/2"
 				/>
-				<p className="typo-label-large">
-					Clara is thinking...
-				</p>
+				<p className="typo-label-large">Clara is thinking...</p>
 			</div>
 		);
 	};
 
-	const BottomAppBar = () => {
+	const BottomAppBar: React.FC<
+		JSX.IntrinsicElements['mdui-bottom-app-bar']
+	> = () => {
 		const inputRef = React.useRef<HTMLInputElement>(null);
+		const [inputValue, setInputValue] = React.useState<string>('');
 
 		useEffect(() => {
 			if (inputRef.current) {
@@ -193,25 +166,81 @@ const Main = () => {
 			}
 		}, [input]);
 
+		const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+			setInputValue(e.target.value);
+		};
+
+		const handleSend = async () => {
+			if (inputValue.trim() && currentUrl) {
+				setIsLoading(true);
+				try {
+					const response = await startLLM(currentUrl, inputValue);
+					setChats((prevChats) => ({
+						...prevChats,
+						[currentUrl]: [
+							...(prevChats[currentUrl] || []),
+							{
+								id: Date.now().toString(),
+								input: inputValue,
+								output: response,
+							},
+						],
+					}));
+				} catch (error) {
+					console.error('Error starting LLM:', error);
+				} finally {
+					setIsLoading(false);
+					setInputValue('');
+				}
+			}
+		};
+
 		return (
-			<mdui-bottom-app-bar fab-detach>
+			<mdui-bottom-app-bar>
 				<input
+					ref={inputRef}
 					type={'text'}
+					value={inputValue}
+					onChange={handleInputChange}
 					placeholder={'Ask me anything!'}
 					className="w-[calc(100%-5em)] h-full text-body-large text-on-surface-variant"
 				/>
-				<mdui-fab icon="keyboard_voice" />
+				{inputValue.length > 0 ? (
+					<mdui-fab icon="send" onClick={handleSend} />
+				) : (
+					<mdui-fab icon="keyboard_voice" />
+				)}
 			</mdui-bottom-app-bar>
 		);
 	};
 
+	const currentChats = currentUrl ? chats[currentUrl] || [] : [];
+
 	return (
 		<mdui-layout-main>
-			<div className="flex flex-col items-center">
-				<LoadingState />
-				<ChatsWrapper chats={chats} url={currentUrl} />
+			<div
+				className="overflow-scroll h-[calc(100vh-8rem)"
+				id="scroll-container"
+			>
+				<div className="flex flex-col gap-4 p-4 divide-y">
+					{currentChats.map((chat, index) => (
+						<React.Fragment key={index}>
+							<Chats
+								input={chat.input}
+								output={chat.output!}
+								aria-label="Chat"
+							/>
+							<LoadingState />
+						</React.Fragment>
+					))}
+				</div>
 			</div>
-			<BottomAppBar />
+			<BottomAppBar
+				fab-detach
+				scroll-behavior="hide"
+				scroll-threshold={30}
+				scroll-target="#scroll-container"
+			/>
 		</mdui-layout-main>
 	);
 };

@@ -5,9 +5,10 @@
 // The content should be refreshed when the tab is changed
 // Prevent the same URL from being processed multiple times
 
-import { startLLM, urlPattern} from './lib/helper';
+import { readText, startLLM, urlPattern} from './lib/helper';
 import { INIT_PROMPT } from "./lib/prompts"
 import { getStorage } from './lib/storage';
+import { RESPONSES } from './lib/responses';
 
 let processedUrls = {};
 const storage = getStorage();
@@ -89,7 +90,17 @@ async function handleNewUrl(url) {
 		chrome.storage.local.set({ processedUrls: processedUrls }, () => {
 			console.log(response);
 		});
+
+		// Play notification sound
+		const successSound = new Audio(chrome.runtime.getURL('sounds/success.wav'));
+		successSound.play();
+
+		// Read out the LLM response
+		readText(response);
 	} catch (error) {
 		console.error('Error handling new URL:', error);
+		const errorSound = new Audio(chrome.runtime.getURL('sounds/error.wav'));
+		errorSound.play();
+		readText(RESPONSES.error.message);
 	}
 }

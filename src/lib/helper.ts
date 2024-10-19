@@ -2,9 +2,7 @@ import { ChatOpenAI } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
 import FirecrawlApp, { ScrapeResponse } from '@mendable/firecrawl-js';
 import { StringOutputParser } from '@langchain/core/output_parsers';
-import {
-	RunnableSequence,
-} from '@langchain/core/runnables';
+import { RunnableSequence } from '@langchain/core/runnables';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { SYSTEM_MSG, USER_MSG } from '@lib/prompts';
 import {
@@ -150,13 +148,9 @@ export async function readText(text: string) {
 	const speech = new SpeechSynthesisUtterance(text);
 
 	try {
-		const language = (await storage.getItem(
-			'speechLanguage'
-		)) as SpeechLanguage;
+		const language = (await storage.getItem('speechLanguage')) as SpeechLanguage;
 		const rate = (await storage.getItem('speechRate')) as number;
-		const voice = (await storage.getItem(
-			'speechVoice'
-		)) as SpeechSynthesisVoice;
+		const voice = (await storage.getItem('speechVoiceURI')) as string;
 
 		console.log(
 			`Retrieved speech settings: language: ${language}, rate: ${rate}, voice: ${voice}`
@@ -164,7 +158,10 @@ export async function readText(text: string) {
 
 		speech.lang = language;
 		speech.rate = rate;
-		speech.voice = voice;
+		speech.voice = (() => {
+			const voices = speechSynthesis.getVoices();
+			return voices.find((v) => v.voiceURI === voice);
+		})() || null;
 
 		speechSynthesis.speak(speech);
 	} catch (error) {
@@ -215,3 +212,8 @@ export const clearCachedResponse = (url: string) => {
 	localStorage.removeItem(`llm-response-${url}`);
 	console.log(`Cleared cached response for ${url}`);
 };
+
+export function playNotificationSound(soundUrl: string) {
+	const audio = new Audio(chrome.runtime.getURL(soundUrl));
+	audio.play();
+}

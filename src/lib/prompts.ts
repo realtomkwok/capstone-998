@@ -74,3 +74,5 @@ When processing webpage content:
 ;
 
 export const USER_MSG: string = `Answer the user's question as best as possible based on the provided context. \n Context: {context} \n User's question: {question}`;
+
+export const INIT_PROMPT: string = `Hello, Clara!`;
