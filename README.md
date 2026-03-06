@@ -1,6 +1,7 @@
 # Clara - Web Navigation Assistant
 
 Clara is a Chrome extension designed to enhance web navigation by providing AI-powered insights and assistance.
+**Demo:** https://www.youtube.com/watch?v=R-BUiJNYNpA
 
 ## Usage
 
